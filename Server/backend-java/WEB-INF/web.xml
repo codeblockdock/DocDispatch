@@ -1,0 +1,28 @@
+<web-app>
+    <servlet>
+        <servlet-name>AddQuery</servlet-name>
+        <servlet-class>backend.AddQueryServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AddQuery</servlet-name>
+        <url-pattern>/api/patient</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>GetQueries</servlet-name>
+        <servlet-class>backend.GetQueriesServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>GetQueries</servlet-name>
+        <url-pattern>/api/queries</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>AttendQuery</servlet-name>
+        <servlet-class>backend.AttendQueryServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AttendQuery</servlet-name>
+        <url-pattern>/api/attend</url-pattern>
+    </servlet-mapping>
+</web-app>
