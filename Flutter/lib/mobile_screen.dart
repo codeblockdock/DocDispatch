@@ -62,7 +62,7 @@ class _MobileScreenState extends State<MobileScreen> {
       setState(() => loading = false);
       debugPrint("Exception: $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Something went wrong")),
+        const SnackBar(content: Text("Something wrong")),
       );
     }
   }
