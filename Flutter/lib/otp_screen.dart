@@ -38,7 +38,6 @@ class _OTPScreenState extends State<OTPScreen> {
 
       final contact = userCredential.user?.phoneNumber ?? "";
 
-      /// ✅ Store contact in SharedPreferences
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString("contact", contact);
 
