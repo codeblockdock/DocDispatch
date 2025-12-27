@@ -1,3 +1,4 @@
+import 'queries_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'mobile_screen.dart';
@@ -76,11 +77,14 @@ class HomeScreen extends StatelessWidget {
                 leading: const Icon(Icons.history),
                 title: const Text("View Previous Queries"),
                 subtitle: const Text("Check doctor responses"),
-                onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Coming soon")),
-                  );
-                },
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const QueriesScreen(),
+                      ),
+                    );
+                  },
               ),
             ),
           ],
