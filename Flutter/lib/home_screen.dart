@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'mobile_screen.dart';
+import 'patient_form_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -48,10 +49,41 @@ class HomeScreen extends StatelessWidget {
           )
         ],
       ),
-      body: const Center(
-        child: Text(
-          "Welcome!",
-          style: TextStyle(fontSize: 22),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            Card(
+              elevation: 4,
+              child: ListTile(
+                leading: const Icon(Icons.assignment),
+                title: const Text("Enter Patient Details"),
+                subtitle: const Text("Submit a new health query"),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const PatientFormScreen(),
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 16),
+            Card(
+              elevation: 4,
+              child: ListTile(
+                leading: const Icon(Icons.history),
+                title: const Text("View Previous Queries"),
+                subtitle: const Text("Check doctor responses"),
+                onTap: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Coming soon")),
+                  );
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );
