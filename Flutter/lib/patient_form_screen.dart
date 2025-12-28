@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class PatientFormScreen extends StatefulWidget {
   const PatientFormScreen({super.key});
@@ -47,7 +48,7 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
       final contact = prefs.getString("contact") ?? "";
 
       final response = await http.post(
-        Uri.parse("https://example.com/api/submit"),
+        Uri.parse("${dotenv.env['API_BASE_URL']}/submit"),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({
           "contact": contact,
@@ -117,7 +118,7 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
 
             const SizedBox(height: 12),
             DropdownButtonFormField<String>(
-              value: gender.isEmpty ? null : gender,
+              initialValue: gender.isEmpty ? null : gender,
               decoration: const InputDecoration(labelText: "Gender"),
               items: const [
                 DropdownMenuItem(value: "Male", child: Text("Male")),

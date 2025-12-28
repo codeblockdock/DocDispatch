@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'models/query_model.dart';
@@ -28,7 +29,7 @@ class _QueriesScreenState extends State<QueriesScreen> {
       final contact = prefs.getString("contact") ?? "";
 
       final res = await http.get(
-        Uri.parse("https://example.com/api/queries?contact=$contact"),
+        Uri.parse("${dotenv.env['API_BASE_URL']}/queries?contact=$contact"),
       );
 
       if (!mounted) return;
