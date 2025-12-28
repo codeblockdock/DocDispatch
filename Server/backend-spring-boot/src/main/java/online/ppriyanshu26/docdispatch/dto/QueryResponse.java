@@ -1,0 +1,32 @@
+package main.java.online.ppriyanshu26.docdispatch.dto;
+
+public class QueryResponse {
+    private Integer qid;
+    private String contact;
+    private Integer attended;
+    private String doctor;
+    private String treatment;
+    private String remarks;
+    private String attendedAt;
+    
+    public Integer getQid() { return qid; }
+    public void setQid(Integer qid) { this.qid = qid; }
+    
+    public String getContact() { return contact; }
+    public void setContact(String contact) { this.contact = contact; }
+    
+    public Integer getAttended() { return attended; }
+    public void setAttended(Integer attended) { this.attended = attended; }
+    
+    public String getDoctor() { return doctor; }
+    public void setDoctor(String doctor) { this.doctor = doctor; }
+    
+    public String getTreatment() { return treatment; }
+    public void setTreatment(String treatment) { this.treatment = treatment; }
+    
+    public String getRemarks() { return remarks; }
+    public void setRemarks(String remarks) { this.remarks = remarks; }
+    
+    public String getAttendedAt() { return attendedAt; }
+    public void setAttendedAt(String attendedAt) { this.attendedAt = attendedAt; }
+}
