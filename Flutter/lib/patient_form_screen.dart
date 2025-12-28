@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'theme_manager.dart';
 
 class PatientFormScreen extends StatefulWidget {
   const PatientFormScreen({super.key});
@@ -89,7 +90,12 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Patient Details")),
+      appBar: AppBar(
+        title: const Text("Patient Details"),
+        actions: const [
+          ThemeToggleButton(),
+        ],
+      ),
       body: Form(
         key: _formKey,
         autovalidateMode: autoValidate,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'otp_screen.dart';
+import 'theme_manager.dart';
 
 class MobileScreen extends StatefulWidget {
   const MobileScreen({super.key});
@@ -27,9 +28,7 @@ class _MobileScreenState extends State<MobileScreen> {
     try {
       await FirebaseAuth.instance.verifyPhoneNumber(
         phoneNumber: "+91$mobile",
-
         verificationCompleted: (_) {},
-
         verificationFailed: (e) {
           if (!mounted) return;
           setState(() => loading = false);
@@ -37,7 +36,6 @@ class _MobileScreenState extends State<MobileScreen> {
             SnackBar(content: Text(e.message ?? "Verification failed")),
           );
         },
-
         codeSent: (verificationId, _) {
           if (!mounted) return;
           setState(() => loading = false);
@@ -48,7 +46,6 @@ class _MobileScreenState extends State<MobileScreen> {
             ),
           );
         },
-
         codeAutoRetrievalTimeout: (_) {
           if (!mounted) return;
           setState(() => loading = false);
@@ -66,7 +63,12 @@ class _MobileScreenState extends State<MobileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Login")),
+      appBar: AppBar(
+        title: const Text("Login"),
+        actions: const [
+          ThemeToggleButton(),
+        ],
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(

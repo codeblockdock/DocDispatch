@@ -4,6 +4,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'models/query_model.dart';
+import 'theme_manager.dart';
 
 class QueriesScreen extends StatefulWidget {
   const QueriesScreen({super.key});
@@ -53,19 +54,32 @@ class _QueriesScreenState extends State<QueriesScreen> {
   @override
   Widget build(BuildContext context) {
     if (loading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text("My Queries"),
+          actions: const [ThemeToggleButton()],
+        ),
+        body: const Center(child: CircularProgressIndicator()),
       );
     }
 
     if (error) {
-      return const Scaffold(
-        body: Center(child: Text("Server error")),
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text("My Queries"),
+          actions: const [ThemeToggleButton()],
+        ),
+        body: const Center(child: Text("Server error")),
       );
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text("My Queries")),
+      appBar: AppBar(
+        title: const Text("My Queries"),
+        actions: const [
+          ThemeToggleButton(),
+        ],
+      ),
       body: ListView.builder(
         itemCount: queries.length,
         itemBuilder: (_, i) {

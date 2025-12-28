@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'mobile_screen.dart';
 import 'patient_form_screen.dart';
 import 'queries_screen.dart';
+import 'theme_manager.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -41,7 +42,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(builder: (_) => MobileScreen()),
+      MaterialPageRoute(builder: (_) => const MobileScreen()),
           (_) => false,
     );
   }
@@ -52,6 +53,7 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: const Text("Home"),
         actions: [
+          const ThemeToggleButton(),
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: logOut,
