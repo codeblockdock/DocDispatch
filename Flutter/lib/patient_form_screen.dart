@@ -21,6 +21,7 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
   bool contagious = false;
   bool loading = false;
   String gender = "";
+  AutovalidateMode autoValidate = AutovalidateMode.disabled;
 
   final List<String> symptomsList = [
     "Fever",
@@ -33,6 +34,10 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
   final List<String> selectedSymptoms = [];
 
   Future<void> submitForm() async {
+    setState(() {
+      autoValidate = AutovalidateMode.onUserInteraction;
+    });
+
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => loading = true);
@@ -41,7 +46,7 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
       final prefs = await SharedPreferences.getInstance();
       final contact = prefs.getString("contact") ?? "";
 
-      await http.post(
+      final response = await http.post(
         Uri.parse("https://example.com/api/submit"),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({
@@ -49,7 +54,7 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
           "name": nameController.text.trim(),
           "age": int.parse(ageController.text),
           "gender": gender,
-          "temperature": double.parse(tempController.text),
+          "temperature": double.parse(tempController.text).round(),
           "days": int.parse(daysController.text),
           "contagious": contagious ? "yes" : "no",
           "symptoms": selectedSymptoms,
@@ -58,17 +63,25 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
 
       if (!mounted) return;
 
-      setState(() => loading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Submitted successfully")),
-      );
-      Navigator.pop(context);
-    } catch (_) {
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Submitted successfully")),
+        );
+        Navigator.pop(context);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Server error (${response.statusCode})")),
+        );
+      }
+    } catch (e) {
       if (!mounted) return;
-      setState(() => loading = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Server error")),
+        const SnackBar(content: Text("Network error")),
       );
+    } finally {
+      if (mounted) {
+        setState(() => loading = false);
+      }
     }
   }
 
@@ -78,7 +91,7 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
       appBar: AppBar(title: const Text("Patient Details")),
       body: Form(
         key: _formKey,
-        autovalidateMode: AutovalidateMode.onUserInteraction,
+        autovalidateMode: autoValidate,
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
