@@ -37,7 +37,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove("contact");
 
-    if (!mounted) return; // ✅ FIX
+    if (!mounted) return;
 
     Navigator.pushAndRemoveUntil(
       context,
@@ -64,7 +64,9 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Card(
               child: ListTile(
+                leading: const Icon(Icons.assignment),
                 title: const Text("Enter Patient Details"),
+                subtitle: const Text("Submit a new health query"),
                 onTap: () {
                   Navigator.push(
                     context,
@@ -78,7 +80,9 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 16),
             Card(
               child: ListTile(
+                leading: const Icon(Icons.history),
                 title: const Text("View Previous Queries"),
+                subtitle: const Text("Check doctor responses"),
                 onTap: () {
                   Navigator.push(
                     context,
