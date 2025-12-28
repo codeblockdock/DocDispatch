@@ -5,7 +5,6 @@ import 'home_screen.dart';
 
 class OTPScreen extends StatefulWidget {
   final String verificationId;
-
   const OTPScreen({super.key, required this.verificationId});
 
   @override
@@ -13,43 +12,42 @@ class OTPScreen extends StatefulWidget {
 }
 
 class _OTPScreenState extends State<OTPScreen> {
-  final TextEditingController otpController = TextEditingController();
+  final otpController = TextEditingController();
   bool loading = false;
 
   Future<void> verifyOtp() async {
-    final otp = otpController.text.trim();
-
-    if (otp.length != 6) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text("Enter 6-digit OTP")));
-      return;
-    }
+    if (otpController.text.length != 6) return;
 
     setState(() => loading = true);
 
     try {
       final credential = PhoneAuthProvider.credential(
         verificationId: widget.verificationId,
-        smsCode: otp,
+        smsCode: otpController.text.trim(),
       );
 
-      final userCredential =
+      final result =
       await FirebaseAuth.instance.signInWithCredential(credential);
 
-      final contact = userCredential.user?.phoneNumber ?? "";
-
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString("contact", contact);
+      await prefs.setString(
+        "contact",
+        result.user?.phoneNumber ?? "",
+      );
+
+      if (!mounted) return;
 
       Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (_) => HomeScreen()),
-            (route) => false,
+        MaterialPageRoute(builder: (_) => const HomeScreen()),
+            (_) => false,
       );
-    } catch (e) {
+    } catch (_) {
+      if (!mounted) return;
       setState(() => loading = false);
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text("Invalid OTP")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Invalid OTP")),
+      );
     }
   }
 
@@ -64,7 +62,7 @@ class _OTPScreenState extends State<OTPScreen> {
             TextField(
               controller: otpController,
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: "Enter OTP"),
+              decoration: const InputDecoration(labelText: "OTP"),
             ),
             const SizedBox(height: 20),
             loading
@@ -72,7 +70,7 @@ class _OTPScreenState extends State<OTPScreen> {
                 : ElevatedButton(
               onPressed: verifyOtp,
               child: const Text("Verify"),
-            )
+            ),
           ],
         ),
       ),

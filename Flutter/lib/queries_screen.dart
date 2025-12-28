@@ -27,18 +27,21 @@ class _QueriesScreenState extends State<QueriesScreen> {
       final prefs = await SharedPreferences.getInstance();
       final contact = prefs.getString("contact") ?? "";
 
-      final response = await http.get(
+      final res = await http.get(
         Uri.parse("https://example.com/api/queries?contact=$contact"),
       );
 
-      if (response.statusCode == 200) {
-        final List data = jsonDecode(response.body);
+      if (!mounted) return;
+
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body) as List;
         queries = data.map((e) => QueryModel.fromJson(e)).toList();
         setState(() => loading = false);
       } else {
         throw Exception();
       }
     } catch (_) {
+      if (!mounted) return;
       setState(() {
         loading = false;
         error = true;
@@ -48,51 +51,41 @@ class _QueriesScreenState extends State<QueriesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (loading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (error) {
+      return const Scaffold(
+        body: Center(child: Text("Server error")),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(title: const Text("My Queries")),
-      body: loading
-          ? const Center(child: CircularProgressIndicator())
-          : error
-          ? const Center(child: Text("Server error"))
-          : queries.isEmpty
-          ? const Center(child: Text("No queries found"))
-          : ListView.builder(
+      body: ListView.builder(
         itemCount: queries.length,
         itemBuilder: (_, i) {
           final q = queries[i];
-
           if (q.attended == 0) {
             return ListTile(
               title: Text(q.name),
-              subtitle: Text("Age: ${q.age}"),
-              trailing: const Icon(Icons.hourglass_empty),
               onTap: () {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content:
-                    Text("Query to be attended shortly"),
+                    content: Text("Query to be attended shortly"),
                   ),
                 );
               },
             );
           }
-
           return ExpansionTile(
             title: Text(q.name),
-            subtitle: Text("Age: ${q.age}"),
             children: [
-              ListTile(
-                title: Text("Doctor: ${q.doctor ?? '-'}"),
-              ),
-              ListTile(
-                title:
-                Text("Treatment: ${q.treatment ?? '-'}"),
-              ),
-              if (q.remarks != null &&
-                  q.remarks!.isNotEmpty)
-                ListTile(
-                  title: Text("Remarks: ${q.remarks}"),
-                ),
+              ListTile(title: Text("Doctor: ${q.doctor}")),
+              ListTile(title: Text("Treatment: ${q.treatment}")),
             ],
           );
         },

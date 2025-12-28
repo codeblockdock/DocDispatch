@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'otp_screen.dart';
 
 class MobileScreen extends StatefulWidget {
+  const MobileScreen({super.key});
   @override
   State<MobileScreen> createState() => _MobileScreenState();
 }
@@ -27,22 +28,19 @@ class _MobileScreenState extends State<MobileScreen> {
       await FirebaseAuth.instance.verifyPhoneNumber(
         phoneNumber: "+91$mobile",
 
-        verificationCompleted: (PhoneAuthCredential credential) {
-          debugPrint("Auto verification completed");
-        },
+        verificationCompleted: (_) {},
 
-        verificationFailed: (FirebaseAuthException e) {
+        verificationFailed: (e) {
+          if (!mounted) return;
           setState(() => loading = false);
-          debugPrint("Verification failed: ${e.message}");
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(e.message ?? "Verification failed")),
           );
         },
 
-        codeSent: (String verificationId, int? resendToken) {
+        codeSent: (verificationId, _) {
+          if (!mounted) return;
           setState(() => loading = false);
-          debugPrint("OTP sent successfully");
-
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -51,22 +49,19 @@ class _MobileScreenState extends State<MobileScreen> {
           );
         },
 
-        codeAutoRetrievalTimeout: (String verificationId) {
-          debugPrint("Auto-retrieval timeout");
+        codeAutoRetrievalTimeout: (_) {
+          if (!mounted) return;
           setState(() => loading = false);
         },
-
-        timeout: const Duration(seconds: 60),
       );
-    } catch (e) {
+    } catch (_) {
+      if (!mounted) return;
       setState(() => loading = false);
-      debugPrint("Exception: $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Something wrong")),
+        const SnackBar(content: Text("Something went wrong")),
       );
     }
   }
-
 
   @override
   Widget build(BuildContext context) {

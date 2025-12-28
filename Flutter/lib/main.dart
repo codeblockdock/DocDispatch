@@ -5,7 +5,7 @@ import 'splash_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(); // 🔥 THIS LINE IS MANDATORY
+  await Firebase.initializeApp();
   runApp(const MyApp());
 }
 
