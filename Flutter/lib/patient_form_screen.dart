@@ -1,103 +1,26 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter/services.dart';
 import 'theme_manager.dart';
+import 'patient_form_logic.dart';
 
 class PatientFormScreen extends StatefulWidget {
   const PatientFormScreen({super.key});
 
   @override
-  State<PatientFormScreen> createState() => _PatientFormScreenState();
+  State<PatientFormScreen> createState() => PatientFormScreenState();
 }
 
-class _PatientFormScreenState extends State<PatientFormScreen> {
-  final _formKey = GlobalKey<FormState>();
-
-  final nameController = TextEditingController();
-  final ageController = TextEditingController();
-  final tempController = TextEditingController();
-  final daysController = TextEditingController();
-
-  bool contagious = false;
-  bool loading = false;
-  String gender = "";
-  AutovalidateMode autoValidate = AutovalidateMode.disabled;
-
-  final List<String> symptomsList = [
-    "Fever",
-    "Cough",
-    "Cold",
-    "Headache",
-    "Sore Throat",
-    "Fatigue"
-  ];
-  final List<String> selectedSymptoms = [];
-
-  Future<void> submitForm() async {
-    setState(() {
-      autoValidate = AutovalidateMode.onUserInteraction;
-    });
-
-    if (!_formKey.currentState!.validate()) return;
-
-    setState(() => loading = true);
-
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final contact = prefs.getString("contact") ?? "";
-
-      final response = await http.post(
-        Uri.parse("${dotenv.env['API_BASE_URL']}/submit"),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({
-          "contact": contact,
-          "name": nameController.text.trim(),
-          "age": int.parse(ageController.text),
-          "gender": gender,
-          "temperature": double.parse(tempController.text).round(),
-          "days": int.parse(daysController.text),
-          "contagious": contagious ? "yes" : "no",
-          "symptoms": selectedSymptoms,
-        }),
-      );
-
-      if (!mounted) return;
-
-      if (response.statusCode == 200) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Submitted successfully")),
-        );
-        Navigator.pop(context);
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Server error (${response.statusCode})")),
-        );
-      }
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Network error")),
-      );
-    } finally {
-      if (mounted) {
-        setState(() => loading = false);
-      }
-    }
-  }
+class PatientFormScreenState extends State<PatientFormScreen> with PatientFormLogic {
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Patient Details"),
-        actions: const [
-          ThemeToggleButton(),
-        ],
+        actions: const [ThemeToggleButton()],
       ),
       body: Form(
-        key: _formKey,
+        key: formKey,
         autovalidateMode: autoValidate,
         child: ListView(
           padding: const EdgeInsets.all(16),
@@ -105,108 +28,153 @@ class _PatientFormScreenState extends State<PatientFormScreen> {
             TextFormField(
               controller: nameController,
               decoration: const InputDecoration(labelText: "Name"),
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z\s]')),
+              ],
               validator: (v) => v == null || v.isEmpty ? "Required" : null,
             ),
-
             const SizedBox(height: 12),
-            TextFormField(
-              controller: ageController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: "Age (5–60)"),
-              validator: (v) {
-                final age = int.tryParse(v ?? "");
-                if (age == null || age < 5 || age > 60) {
-                  return "Age must be between 5 and 60";
-                }
-                return null;
-              },
-            ),
-
-            const SizedBox(height: 12),
-            DropdownButtonFormField<String>(
-              initialValue: gender.isEmpty ? null : gender,
-              decoration: const InputDecoration(labelText: "Gender"),
-              items: const [
-                DropdownMenuItem(value: "Male", child: Text("Male")),
-                DropdownMenuItem(value: "Female", child: Text("Female")),
-                DropdownMenuItem(value: "Other", child: Text("Other")),
+            Row(
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    controller: ageController,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(labelText: "Age (5–60)"),
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    validator: (v) {
+                      final age = int.tryParse(v ?? "");
+                      if (age == null || age < 5 || age > 60) return "Invalid";
+                      return null;
+                    },
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: DropdownButtonFormField<String>(
+                    initialValue: gender.isEmpty ? null : gender,
+                    decoration: const InputDecoration(labelText: "Gender"),
+                    items: const [
+                      DropdownMenuItem(value: "Male", child: Text("Male")),
+                      DropdownMenuItem(value: "Female", child: Text("Female")),
+                      DropdownMenuItem(value: "Other", child: Text("Other")),
+                    ],
+                    validator: (v) => v == null ? "Required" : null,
+                    onChanged: (v) => setState(() => gender = v!),
+                  ),
+                ),
               ],
-              validator: (v) {
-                if (v == null || v.isEmpty) {
-                  return "Please select gender";
-                }
-                return null;
-              },
-              onChanged: (v) {
-                setState(() {
-                  gender = v!;
-                });
-              },
             ),
-
             const SizedBox(height: 12),
-            TextFormField(
-              controller: tempController,
-              keyboardType: TextInputType.number,
-              decoration:
-              const InputDecoration(labelText: "Temperature (°C 35–41)"),
-              validator: (v) {
-                final temp = double.tryParse(v ?? "");
-                if (temp == null || temp < 35 || temp > 41) {
-                  return "Temperature must be 35–41 °C";
-                }
-                return null;
-              },
+            Row(
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    controller: tempController,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    decoration: const InputDecoration(labelText: "Temp (°C)"),
+                    inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))],
+                    validator: (v) {
+                      final t = double.tryParse(v ?? "");
+                      if (t == null || t < 35 || t > 41) return "35–41 Only";
+                      return null;
+                    },
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: TextFormField(
+                    controller: daysController,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(labelText: "Days (0–7)"),
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    validator: (v) {
+                      final d = int.tryParse(v ?? "");
+                      if (d == null || d < 0 || d > 7) return "0–7 Only";
+                      return null;
+                    },
+                  ),
+                ),
+              ],
             ),
-
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: daysController,
-              keyboardType: TextInputType.number,
-              decoration:
-              const InputDecoration(labelText: "Days in condition (0–7)"),
-              validator: (v) {
-                final d = int.tryParse(v ?? "");
-                if (d == null || d < 0 || d > 7) {
-                  return "Days must be between 0 and 7";
-                }
-                return null;
-              },
-            ),
-
             const SizedBox(height: 12),
             CheckboxListTile(
               title: const Text("Condition seems contagious"),
               value: contagious,
               onChanged: (v) => setState(() => contagious = v!),
+              contentPadding: EdgeInsets.zero,
             ),
-
+            const Divider(),
+            const Text("Location Details", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
-            const Text("Symptoms (optional)"),
+            Row(
+              children: [
+                Expanded(
+                  flex: 2,
+                  child: TextFormField(
+                    controller: zipController,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(labelText: "Zipcode"),
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    validator: (v) => v == null || v.length != 6 ? "6 Digits" : null,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  flex: 3,
+                  child: TextFormField(
+                    controller: cityController,
+                    decoration: const InputDecoration(labelText: "City"),
+                    validator: (v) => v == null || v.isEmpty ? "Required" : null,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            DropdownButtonFormField<String>(
+              initialValue: selectedState,
+              decoration: const InputDecoration(labelText: "State (India)"),
+              items: indianStates.map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
+              onChanged: (v) => setState(() => selectedState = v),
+              validator: (v) => v == null ? "Required" : null,
+            ),
+            const Divider(height: 30),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text("Symptoms (Max 5)", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                Text("${selectedSymptoms.length}/5", style: TextStyle(color: selectedSymptoms.length == 5 ? Colors.red : Colors.grey)),
+              ],
+            ),
+            const SizedBox(height: 8),
             Wrap(
               spacing: 8,
-              children: symptomsList.map((s) {
-                final selected = selectedSymptoms.contains(s);
-                return FilterChip(
+              children: [
+                ...commonSymptoms.map((s) => FilterChip(
                   label: Text(s),
-                  selected: selected,
-                  onSelected: (v) {
-                    setState(() {
-                      v
-                          ? selectedSymptoms.add(s)
-                          : selectedSymptoms.remove(s);
-                    });
-                  },
-                );
-              }).toList(),
+                  selected: selectedSymptoms.contains(s),
+                  onSelected: (v) => toggleSymptom(s),
+                )),
+                ...selectedSymptoms.where((s) => !commonSymptoms.contains(s)).map((s) => InputChip(
+                  label: Text(s),
+                  selected: true,
+                  onDeleted: () => toggleSymptom(s),
+                  onSelected: (bool value) {},
+                )),
+                ActionChip(
+                  avatar: const Icon(Icons.add, size: 16),
+                  label: const Text("Add Custom"),
+                  onPressed: showAddSymptomDialog,
+                ),
+              ],
             ),
-
-            const SizedBox(height: 20),
+            const SizedBox(height: 30),
             ElevatedButton(
-              onPressed: loading ? null : submitForm,
+              onPressed: loading ? null : handleVerifyButton,
+              style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 50)),
               child: loading
-                  ? const CircularProgressIndicator(color: Colors.white)
-                  : const Text("SUBMIT"),
+                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                  : const Text("REVIEW & SUBMIT"),
             ),
           ],
         ),
