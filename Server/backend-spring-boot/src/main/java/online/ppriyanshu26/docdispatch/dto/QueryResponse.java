@@ -1,22 +1,22 @@
-package main.java.online.ppriyanshu26.docdispatch.dto;
+package online.ppriyanshu26.docdispatch.dto;
 
 public class QueryResponse {
-    private Integer qid;
+    private int qid;
     private String contact;
-    private Integer attended;
+    private int attended;
     private String doctor;
     private String treatment;
     private String remarks;
     private String attendedAt;
     
-    public Integer getQid() { return qid; }
-    public void setQid(Integer qid) { this.qid = qid; }
+    public int getQid() { return qid; }
+    public void setQid(int qid) { this.qid = qid; }
     
     public String getContact() { return contact; }
     public void setContact(String contact) { this.contact = contact; }
     
-    public Integer getAttended() { return attended; }
-    public void setAttended(Integer attended) { this.attended = attended; }
+    public int getAttended() { return attended; }
+    public void setAttended(int attended) { this.attended = attended; }
     
     public String getDoctor() { return doctor; }
     public void setDoctor(String doctor) { this.doctor = doctor; }

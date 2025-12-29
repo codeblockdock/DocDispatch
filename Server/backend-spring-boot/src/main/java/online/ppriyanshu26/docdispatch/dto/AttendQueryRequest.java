@@ -1,14 +1,14 @@
-package main.java.online.ppriyanshu26.docdispatch.dto;
+package online.ppriyanshu26.docdispatch.dto;
 
 public class AttendQueryRequest {
-    private Integer qid;
+    private int qid;
     private String contact;
     private String doctor;
     private String treatment;
     private String remarks;
     
-    public Integer getQid() { return qid; }
-    public void setQid(Integer qid) { this.qid = qid; }
+    public int getQid() { return qid; }
+    public void setQid(int qid) { this.qid = qid; }
     
     public String getContact() { return contact; }
     public void setContact(String contact) { this.contact = contact; }

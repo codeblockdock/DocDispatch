@@ -1,9 +1,9 @@
-package main.java.online.ppriyanshu26.docdispatch.controller;
+package online.ppriyanshu26.docdispatch.controller;
 
-import main.java.online.ppriyanshu26.docdispatch.dto.AddQueryRequest;
-import main.java.online.ppriyanshu26.docdispatch.dto.AttendQueryRequest;
-import main.java.online.ppriyanshu26.docdispatch.dto.QueryResponse;
-import main.java.online.ppriyanshu26.docdispatch.service.QueryService;
+import online.ppriyanshu26.docdispatch.dto.AddQueryRequest;
+import online.ppriyanshu26.docdispatch.dto.AttendQueryRequest;
+import online.ppriyanshu26.docdispatch.dto.QueryResponse;
+import online.ppriyanshu26.docdispatch.service.QueryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

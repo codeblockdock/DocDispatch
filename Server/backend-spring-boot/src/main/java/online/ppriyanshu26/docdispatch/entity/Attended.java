@@ -1,4 +1,4 @@
-package main.java.online.ppriyanshu26.docdispatch.entity;
+package online.ppriyanshu26.docdispatch.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
@@ -9,7 +9,7 @@ public class Attended {
     
     @Id
     @Column(nullable = false)
-    private Integer qid;
+    private int qid;
     
     @Column(nullable = false, length = 15)
     private String contact;
@@ -34,8 +34,8 @@ public class Attended {
     }
     
     // Getters and Setters
-    public Integer getQid() { return qid; }
-    public void setQid(Integer qid) { this.qid = qid; }
+    public int getQid() { return qid; }
+    public void setQid(int qid) { this.qid = qid; }
     
     public String getContact() { return contact; }
     public void setContact(String contact) { this.contact = contact; }

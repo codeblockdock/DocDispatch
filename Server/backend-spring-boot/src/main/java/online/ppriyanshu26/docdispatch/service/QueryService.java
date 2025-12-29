@@ -1,12 +1,12 @@
-package main.java.online.ppriyanshu26.docdispatch.service;
+package online.ppriyanshu26.docdispatch.service;
 
-import main.java.online.ppriyanshu26.docdispatch.dto.AddQueryRequest;
-import main.java.online.ppriyanshu26.docdispatch.dto.AttendQueryRequest;
-import main.java.online.ppriyanshu26.docdispatch.dto.QueryResponse;
-import main.java.online.ppriyanshu26.docdispatch.entity.Attended;
-import main.java.online.ppriyanshu26.docdispatch.entity.Query;
-import main.java.online.ppriyanshu26.docdispatch.repository.AttendedRepository;
-import main.java.online.ppriyanshu26.docdispatch.repository.QueryRepository;
+import online.ppriyanshu26.docdispatch.dto.AddQueryRequest;
+import online.ppriyanshu26.docdispatch.dto.AttendQueryRequest;
+import online.ppriyanshu26.docdispatch.dto.QueryResponse;
+import online.ppriyanshu26.docdispatch.entity.Attended;
+import online.ppriyanshu26.docdispatch.entity.Query;
+import online.ppriyanshu26.docdispatch.repository.AttendedRepository;
+import online.ppriyanshu26.docdispatch.repository.QueryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
