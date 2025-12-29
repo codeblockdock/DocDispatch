@@ -1,3 +1,41 @@
+/*
+ * AddQueryRequest.java - Data Transfer Object for Creating New Patient Queries
+ * 
+ * PURPOSE:
+ * This DTO (Data Transfer Object) represents the JSON data sent from the Flutter
+ * mobile app when a patient submits a new medical query.
+ * 
+ * WHY USE DTOS?
+ * - Decouples API from database structure (entities)
+ * - Validates and sanitizes incoming data
+ * - Allows API to evolve without changing database schema
+ * - Security: only exposes fields that should be sent by client
+ * 
+ * FIELDS (sent from mobile app):
+ * - contact: Patient's phone number
+ * - name: Patient's full name
+ * - age: Patient's age
+ * - gender: Male/Female
+ * - temperature: Body temperature
+ * - days: How many days patient has been sick
+ * - contagious: Yes/No - if symptoms are contagious
+ * 
+ * HTTP REQUEST EXAMPLE:
+ * POST /api/patient
+ * Content-Type: application/json
+ * {
+ *   "contact": "9876543210",
+ *   "name": "John Doe",
+ *   "age": 30,
+ *   "gender": "Male",
+ *   "temperature": 101,
+ *   "days": 3,
+ *   "contagious": "No"
+ * }
+ * 
+ * FLOW:
+ * Mobile App -> JSON -> Controller -> DTO -> Service -> Entity -> Database
+ */
 package online.ppriyanshu26.docdispatch.dto;
 
 public class AddQueryRequest {

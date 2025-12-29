@@ -1,3 +1,36 @@
+/*
+ * Attended.java - JPA Entity representing Doctor Responses to Patient Queries
+ * 
+ * PURPOSE:
+ * This entity class maps to the 'attended' table in MySQL database.
+ * It stores doctor's responses, diagnoses, and treatments for patient queries.
+ * 
+ * DATABASE TABLE: attended
+ * 
+ * FIELDS:
+ * - qid: Query ID (Primary Key, references queries table)
+ * - contact: Doctor's phone number for patient follow-up
+ * - doctor: Name of the attending doctor
+ * - treatment: Prescribed treatment and medication details
+ * - remarks: Additional notes or instructions from doctor (optional)
+ * - attendedAt: Timestamp when doctor responded to query
+ * 
+ * RELATIONSHIP:
+ * One-to-One with Query entity (each attended record links to one query)
+ * The qid serves as both primary key and foreign key
+ * 
+ * LIFECYCLE:
+ * When a query is attended:
+ * 1. Query.attended field is set to 1
+ * 2. New Attended record is created with doctor's response
+ * 3. attendedAt timestamp is auto-set via @PrePersist
+ * 
+ * JPA ANNOTATIONS:
+ * @Entity - Marks as database entity
+ * @Table - Maps to 'attended' table
+ * @Id - qid is the primary key (not auto-generated)
+ * @PrePersist - Auto-sets attendedAt timestamp before first save
+ */
 package online.ppriyanshu26.docdispatch.entity;
 
 import jakarta.persistence.*;

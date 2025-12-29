@@ -1,3 +1,36 @@
+/*
+ * QueryService.java - Business Logic Layer for Query Management
+ * 
+ * PURPOSE:
+ * This service class contains the core business logic for managing patient queries
+ * and doctor responses. It acts as an intermediary between the controller and
+ * the database repositories.
+ * 
+ * MAIN OPERATIONS:
+ * 
+ * 1. addQuery(AddQueryRequest) - Creates a new patient query
+ *    - Converts DTO to Entity
+ *    - Saves query to database
+ *    - Uses @Transactional to ensure data consistency
+ * 
+ * 2. getQueriesByContact(String) - Retrieves all queries for a phone number
+ *    - Fetches queries from database
+ *    - Joins with attended records if query was answered
+ *    - Formats timestamps for display
+ *    - Returns formatted response DTOs
+ * 
+ * 3. attendQuery(AttendQueryRequest) - Doctor responds to patient query
+ *    - Updates query status to attended (1)
+ *    - Creates new attended record with doctor's response
+ *    - Uses @Transactional to ensure both operations succeed or fail together
+ * 
+ * TRANSACTION MANAGEMENT:
+ * @Transactional ensures database operations are atomic - if any step fails,
+ * all changes are rolled back to maintain data integrity
+ * 
+ * DATA FLOW:
+ * Controller -> Service (Business Logic) -> Repository (Database Access)
+ */
 package online.ppriyanshu26.docdispatch.service;
 
 import online.ppriyanshu26.docdispatch.dto.AddQueryRequest;

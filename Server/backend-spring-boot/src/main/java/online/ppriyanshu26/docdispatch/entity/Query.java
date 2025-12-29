@@ -1,3 +1,37 @@
+/*
+ * Query.java - JPA Entity representing Patient Medical Queries
+ * 
+ * PURPOSE:
+ * This entity class maps to the 'queries' table in MySQL database.
+ * It represents a patient's medical query submitted through the mobile app.
+ * 
+ * DATABASE TABLE: queries
+ * 
+ * FIELDS:
+ * - qid: Auto-generated unique query ID (Primary Key)
+ * - contact: Patient's phone number (15 chars max)
+ * - name: Patient's full name (255 chars)
+ * - age: Patient's age (0-255)
+ * - gender: Male/Female (6 chars)
+ * - temperature: Body temperature in degrees
+ * - days: Number of days patient has been sick
+ * - contagious: Yes/No - if disease is contagious
+ * - treatment: Prescribed treatment (100 chars, optional)
+ * - disease: Diagnosed disease (20 chars, optional)
+ * - attended: Status flag (0=pending, 1=attended by doctor)
+ * - receivedAt: Timestamp when query was submitted
+ * 
+ * JPA ANNOTATIONS:
+ * @Entity - Marks this as a database entity
+ * @Table - Maps to 'queries' table
+ * @Id - Primary key field
+ * @GeneratedValue - Auto-increment for primary key
+ * @Column - Specifies database column constraints
+ * @PrePersist - Sets receivedAt timestamp before saving
+ * 
+ * RELATIONSHIPS:
+ * One-to-One with Attended entity (if query is attended)
+ */
 package online.ppriyanshu26.docdispatch.entity;
 
 import jakarta.persistence.*;

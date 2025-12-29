@@ -1,3 +1,47 @@
+/*
+ * QueryResponse.java - Data Transfer Object for Returning Query Data to Client
+ * 
+ * PURPOSE:
+ * This DTO represents the JSON data sent back to the Flutter mobile app when
+ * a patient requests their query history. It combines data from both Query and
+ * Attended entities.
+ * 
+ * FIELDS (sent to mobile app):
+ * - qid: Unique query ID
+ * - contact: Patient's phone number
+ * - attended: Status (0=pending, 1=doctor responded)
+ * - doctor: Name of doctor who attended (null if not attended)
+ * - treatment: Prescribed treatment (null if not attended)
+ * - remarks: Doctor's additional notes (null if not attended)
+ * - attendedAt: Timestamp when doctor responded (null if not attended)
+ * 
+ * HTTP RESPONSE EXAMPLE:
+ * GET /api/queries?contact=9876543210
+ * Response: 200 OK
+ * [
+ *   {
+ *     "qid": 123,
+ *     "contact": "9876543210",
+ *     "attended": 1,
+ *     "doctor": "Dr. Smith",
+ *     "treatment": "Paracetamol 500mg",
+ *     "remarks": "Rest for 3 days",
+ *     "attendedAt": "2025-12-29 10:30:00"
+ *   },
+ *   {
+ *     "qid": 124,
+ *     "contact": "9876543210",
+ *     "attended": 0,
+ *     "doctor": null,
+ *     "treatment": null,
+ *     "remarks": null,
+ *     "attendedAt": null
+ *   }
+ * ]
+ * 
+ * FLOW:
+ * Database -> Entities -> Service (combines data) -> DTO -> Controller -> JSON -> Mobile App
+ */
 package online.ppriyanshu26.docdispatch.dto;
 
 public class QueryResponse {
