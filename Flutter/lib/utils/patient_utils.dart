@@ -86,20 +86,12 @@ mixin PatientFormLogic<T extends StatefulWidget> on State<T> {
       if (selectedSymptoms.contains(symptom)) {
         selectedSymptoms.remove(symptom);
       } else {
-        if (selectedSymptoms.length >= 5) {
-          showMaxLimitSnackBar();
-        } else {
-          selectedSymptoms.add(symptom);
-        }
+        selectedSymptoms.add(symptom);
       }
     });
   }
 
   void showAddSymptomDialog() {
-    if (selectedSymptoms.length >= 5) {
-      showMaxLimitSnackBar();
-      return;
-    }
     showDialog(
       context: context,
       builder: (ctx) {
@@ -120,6 +112,7 @@ mixin PatientFormLogic<T extends StatefulWidget> on State<T> {
                 controller: textController,
                 focusNode: focusNode,
                 autofocus: true,
+                textCapitalization: TextCapitalization.sentences,
                 decoration: InputDecoration(
                   labelText: "Type symptom...",
                   suffixIcon: IconButton(
@@ -147,18 +140,14 @@ mixin PatientFormLogic<T extends StatefulWidget> on State<T> {
     );
   }
 
-  void showMaxLimitSnackBar() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Maximum of 5 symptoms allowed")),
-    );
-  }
-
   void handleVerifyButton() {
     setState(() {
       autoValidate = AutovalidateMode.onUserInteraction;
     });
 
     if (!formKey.currentState!.validate()) return;
+
+    FocusManager.instance.primaryFocus?.unfocus();
 
     showDialog(
       context: context,
@@ -184,6 +173,7 @@ mixin PatientFormLogic<T extends StatefulWidget> on State<T> {
             ),
             ElevatedButton(
               onPressed: () {
+                FocusManager.instance.primaryFocus?.unfocus();
                 Navigator.pop(context);
                 submitFinalData();
               },
@@ -211,6 +201,9 @@ mixin PatientFormLogic<T extends StatefulWidget> on State<T> {
   }
 
   Future<void> submitFinalData() async {
+    FocusManager.instance.primaryFocus?.unfocus();
+    await Future.delayed(const Duration(milliseconds: 200));
+
     setState(() => loading = true);
     await saveAddressToPrefs();
 

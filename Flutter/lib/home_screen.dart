@@ -3,16 +3,16 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'mobile_screen.dart';
 import 'patient_form_screen.dart';
 import 'queries_screen.dart';
-import 'theme_manager.dart';
+import 'utils/theme_manager.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<HomeScreen> createState() => HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class HomeScreenState extends State<HomeScreen> {
 
   Future<void> logOut() async {
     final confirm = await showDialog<bool>(

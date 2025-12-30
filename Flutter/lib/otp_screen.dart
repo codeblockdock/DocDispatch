@@ -2,22 +2,33 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'home_screen.dart';
-import 'theme_manager.dart';
+import 'utils/theme_manager.dart';
 
 class OTPScreen extends StatefulWidget {
   final String verificationId;
-  const OTPScreen({super.key, required this.verificationId});
+  final String mobileNumber;
+
+  const OTPScreen({
+    super.key,
+    required this.verificationId,
+    required this.mobileNumber,
+  });
 
   @override
-  State<OTPScreen> createState() => _OTPScreenState();
+  State<OTPScreen> createState() => OTPScreenState();
 }
 
-class _OTPScreenState extends State<OTPScreen> {
+class OTPScreenState extends State<OTPScreen> {
   final otpController = TextEditingController();
   bool loading = false;
 
   Future<void> verifyOtp() async {
-    if (otpController.text.length != 6) return;
+    if (otpController.text.length != 6) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please enter a 6-digit OTP")),
+      );
+      return;
+    }
 
     setState(() => loading = true);
 
@@ -27,14 +38,10 @@ class _OTPScreenState extends State<OTPScreen> {
         smsCode: otpController.text.trim(),
       );
 
-      final result =
       await FirebaseAuth.instance.signInWithCredential(credential);
 
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(
-        "contact",
-        result.user?.phoneNumber ?? "",
-      );
+      await prefs.setString("contact", widget.mobileNumber);
 
       if (!mounted) return;
 
@@ -43,11 +50,23 @@ class _OTPScreenState extends State<OTPScreen> {
         MaterialPageRoute(builder: (_) => const HomeScreen()),
             (_) => false,
       );
+    } on FirebaseAuthException catch (e) {
+      if (!mounted) return;
+      setState(() => loading = false);
+
+      String message = "Invalid OTP";
+      if (e.code == 'session-expired') {
+        message = "OTP has expired. Resend code.";
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
     } catch (_) {
       if (!mounted) return;
       setState(() => loading = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Invalid OTP")),
+        const SnackBar(content: Text("Something went wrong")),
       );
     }
   }
@@ -68,13 +87,21 @@ class _OTPScreenState extends State<OTPScreen> {
             TextField(
               controller: otpController,
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: "OTP"),
+              maxLength: 6,
+              autofocus: true,
+              decoration: const InputDecoration(
+                labelText: "OTP",
+                counterText: "",
+              ),
             ),
             const SizedBox(height: 20),
             loading
                 ? const CircularProgressIndicator()
                 : ElevatedButton(
               onPressed: verifyOtp,
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size(double.infinity, 50),
+              ),
               child: const Text("Verify"),
             ),
           ],

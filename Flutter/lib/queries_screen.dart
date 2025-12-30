@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 import 'models/query_model.dart';
-import 'theme_manager.dart';
+import 'utils/theme_manager.dart';
 import 'utils/query_utils.dart';
 
 class QueriesScreen extends StatefulWidget {
@@ -19,10 +19,10 @@ class QueriesScreenState extends State<QueriesScreen> {
   @override
   void initState() {
     super.initState();
-    _loadInitialData();
+    loadInitialData();
   }
 
-  Future<void> _loadInitialData() async {
+  Future<void> loadInitialData() async {
     final cached = await QueryUtils.getCachedQueries();
     if (cached.isNotEmpty) {
       setState(() {
@@ -30,10 +30,10 @@ class QueriesScreenState extends State<QueriesScreen> {
         loading = false;
       });
     }
-    _handleRefresh();
+    refresh();
   }
 
-  Future<void> _handleRefresh() async {
+  Future<void> refresh() async {
     try {
       final freshData = await QueryUtils.fetchAndCacheQueries();
       if (!mounted) return;
@@ -57,16 +57,16 @@ class QueriesScreenState extends State<QueriesScreen> {
         actions: const [ThemeToggleButton()],
       ),
       body: RefreshIndicator(
-        onRefresh: _handleRefresh,
-        child: _buildBody(),
+        onRefresh: refresh,
+        child: buildBody(),
       ),
     );
   }
 
-  Widget _buildBody() {
+  Widget buildBody() {
     if (loading && queries.isEmpty) return const ShimmerLoading();
-    if (error && queries.isEmpty) return _buildStatusMessage("Server error. Pull to retry.");
-    if (queries.isEmpty) return _buildStatusMessage("No queries found.");
+    if (error && queries.isEmpty) return buildStatusMessage("Server error. Pull to retry.");
+    if (queries.isEmpty) return buildStatusMessage("No queries found.");
 
     return ListView.builder(
       physics: const AlwaysScrollableScrollPhysics(),
@@ -75,7 +75,7 @@ class QueriesScreenState extends State<QueriesScreen> {
     );
   }
 
-  Widget _buildStatusMessage(String msg) {
+  Widget buildStatusMessage(String msg) {
     return ListView(
       children: [
         SizedBox(
@@ -97,7 +97,7 @@ class ShimmerLoading extends StatelessWidget {
       highlightColor: Colors.grey[100]!,
       child: ListView.builder(
         itemCount: 6,
-        itemBuilder: (_, __) => Padding(
+        itemBuilder: (_, _) => Padding(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
           child: Container(
             height: 80,
@@ -125,6 +125,14 @@ class QueryCard extends StatelessWidget {
           leading: const Icon(Icons.access_time, color: Colors.orange),
           title: Text(q.name),
           subtitle: const Text("Status: Pending review"),
+          onTap: () {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text("Query to be attended shortly"),
+                duration: Duration(seconds: 2),
+              ),
+            );
+          },
         ),
       );
     }
@@ -138,12 +146,12 @@ class QueryCard extends StatelessWidget {
         title: Text(q.name),
         subtitle: Text("Diagnosis: ${q.diagnosis}"),
         children: [
-          _infoTile(Icons.person, "Doctor", q.doctor, Colors.blue),
-          _infoTile(Icons.local_hospital, "Location", "${q.hospital}, ${q.city}", Colors.red),
-          _infoTile(Icons.medication, "Treatment", q.treatment, Colors.purpleAccent),
+          infoTile(Icons.person, "Doctor", q.doctor, Colors.blue),
+          infoTile(Icons.local_hospital, "Location", "${q.hospital}, ${q.city}", Colors.red),
+          infoTile(Icons.medication, "Treatment", q.treatment, Colors.purpleAccent),
           Container(
-            color: hasAppt ? Colors.deepPurple.withOpacity(0.1) : null,
-            child: _infoTile(
+            color: hasAppt ? Colors.deepPurple.withValues(alpha: 0.1) : null,
+            child: infoTile(
                 Icons.calendar_month,
                 "Appointment",
                 q.appointment,
@@ -151,13 +159,13 @@ class QueryCard extends StatelessWidget {
                 isBold: hasAppt
             ),
           ),
-          _infoTile(Icons.info_outline, "Advice", q.advice, Colors.orange),
+          infoTile(Icons.info_outline, "Advice", q.advice, Colors.orange),
         ],
       ),
     );
   }
 
-  Widget _infoTile(IconData icon, String title, String sub, Color color, {bool isBold = false}) {
+  Widget infoTile(IconData icon, String title, String sub, Color color, {bool isBold = false}) {
     return ListTile(
       leading: Icon(icon, color: color),
       title: Text(title),

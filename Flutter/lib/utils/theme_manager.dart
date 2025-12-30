@@ -16,7 +16,7 @@ class ThemeToggleButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return ValueListenableBuilder<ThemeMode>(
       valueListenable: themeNotifier,
-      builder: (_, currentMode, __) {
+      builder: (_, currentMode, _) {
         final isDark = currentMode == ThemeMode.dark;
         return IconButton(
           icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode),

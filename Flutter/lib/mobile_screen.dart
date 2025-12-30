@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'otp_screen.dart';
-import 'theme_manager.dart';
+import 'utils/theme_manager.dart';
 
 class MobileScreen extends StatefulWidget {
   const MobileScreen({super.key});
   @override
-  State<MobileScreen> createState() => _MobileScreenState();
+  State<MobileScreen> createState() => MobileScreenState();
 }
 
-class _MobileScreenState extends State<MobileScreen> {
+class MobileScreenState extends State<MobileScreen> {
   final TextEditingController mobileController = TextEditingController();
   bool loading = false;
 
@@ -42,7 +42,10 @@ class _MobileScreenState extends State<MobileScreen> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) => OTPScreen(verificationId: verificationId),
+              builder: (_) => OTPScreen(
+                verificationId: verificationId,
+                mobileNumber: mobileController.text.trim(),
+              ),
             ),
           );
         },
@@ -86,6 +89,9 @@ class _MobileScreenState extends State<MobileScreen> {
                 ? const CircularProgressIndicator()
                 : ElevatedButton(
               onPressed: sendOtp,
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size(double.infinity, 50),
+              ),
               child: const Text("Send OTP"),
             )
           ],
