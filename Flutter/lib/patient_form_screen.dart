@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'theme_manager.dart';
-import 'patient_form_logic.dart';
+import 'utils/patient_utils.dart';
 
 class PatientFormScreen extends StatefulWidget {
   const PatientFormScreen({super.key});
