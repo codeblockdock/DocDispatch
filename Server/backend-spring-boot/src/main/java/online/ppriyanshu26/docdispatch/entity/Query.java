@@ -67,8 +67,8 @@ public class Query {
     @Column(nullable = false, length = 3)
     private String contagious;
     
-    @Column(length = 100)
-    private String treatment;
+    @Column(columnDefinition = "JSON")
+    private String symptoms;
     
     @Column(length = 20)
     private String disease;
@@ -111,8 +111,8 @@ public class Query {
     public String getContagious() { return contagious; }
     public void setContagious(String contagious) { this.contagious = contagious; }
     
-    public String getTreatment() { return treatment; }
-    public void setTreatment(String treatment) { this.treatment = treatment; }
+    public String getSymptoms() { return symptoms; }
+    public void setSymptoms(String symptoms) { this.symptoms = symptoms; }
     
     public String getDisease() { return disease; }
     public void setDisease(String disease) { this.disease = disease; }

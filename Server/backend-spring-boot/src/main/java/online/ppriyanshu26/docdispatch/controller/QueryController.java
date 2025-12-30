@@ -38,7 +38,7 @@ import online.ppriyanshu26.docdispatch.dto.AddQueryRequest;
 import online.ppriyanshu26.docdispatch.dto.AttendQueryRequest;
 import online.ppriyanshu26.docdispatch.dto.DiseasePrediction;
 import online.ppriyanshu26.docdispatch.dto.PredictDiseaseRequest;
-import online.ppriyanshu26.docdispatch.dto.QueryResponse;
+import online.ppriyanshu26.docdispatch.dto.QueryResponseDto;
 import online.ppriyanshu26.docdispatch.service.PredictionService;
 import online.ppriyanshu26.docdispatch.service.QueryService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,7 +50,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("")
 @CrossOrigin(origins = "*")
 public class QueryController {
     
@@ -63,7 +63,7 @@ public class QueryController {
         this.predictionService = predictionService;
     }
     
-    @PostMapping("/patient")
+    @PostMapping("/submit")
     public ResponseEntity<Map<String, String>> addQuery(@RequestBody AddQueryRequest request) {
         try {
             queryService.addQuery(request);
@@ -80,10 +80,15 @@ public class QueryController {
     
     @GetMapping("/queries")
     public ResponseEntity<?> getQueries(@RequestParam String contact) {
+        System.out.println("\n========== QUERY REQUEST ==========");
+        System.out.println("Searching queries for contact: " + contact);
+        System.out.println("===================================\n");
         try {
-            List<QueryResponse> queries = queryService.getQueriesByContact(contact);
+            List<QueryResponseDto> queries = queryService.getQueriesByContact(contact);
+            System.out.println("Found " + queries.size() + " queries for contact: " + contact + "\n");
             return ResponseEntity.ok(queries);
         } catch (Exception e) {
+            System.out.println("Error fetching queries: " + e.getMessage() + "\n");
             Map<String, String> response = new HashMap<>();
             response.put("error", e.getMessage());
             return ResponseEntity.internalServerError().body(response);

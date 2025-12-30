@@ -35,11 +35,14 @@ package online.ppriyanshu26.docdispatch.service;
 
 import online.ppriyanshu26.docdispatch.dto.AddQueryRequest;
 import online.ppriyanshu26.docdispatch.dto.AttendQueryRequest;
-import online.ppriyanshu26.docdispatch.dto.QueryResponse;
+import online.ppriyanshu26.docdispatch.dto.QueryResponseDto;
 import online.ppriyanshu26.docdispatch.entity.Attended;
+import online.ppriyanshu26.docdispatch.entity.PatientLocation;
 import online.ppriyanshu26.docdispatch.entity.Query;
 import online.ppriyanshu26.docdispatch.repository.AttendedRepository;
+import online.ppriyanshu26.docdispatch.repository.PatientLocationRepository;
 import online.ppriyanshu26.docdispatch.repository.QueryRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -53,17 +56,42 @@ public class QueryService {
     
     private final QueryRepository queryRepository;
     private final AttendedRepository attendedRepository;
+    private final PatientLocationRepository patientLocationRepository;
+    private final ObjectMapper objectMapper;
     
     @Autowired
-    public QueryService(QueryRepository queryRepository, AttendedRepository attendedRepository) {
+    public QueryService(QueryRepository queryRepository, AttendedRepository attendedRepository, 
+                       PatientLocationRepository patientLocationRepository) {
         this.queryRepository = queryRepository;
         this.attendedRepository = attendedRepository;
+        this.patientLocationRepository = patientLocationRepository;
+        this.objectMapper = new ObjectMapper();
     }
     
     @Transactional
     public void addQuery(AddQueryRequest request) {
+        // ===== PRINT RECEIVED DATA TO TERMINAL =====
+        System.out.println("\n========== NEW QUERY RECEIVED ==========");
+        System.out.println("Contact: " + request.getContact());
+        System.out.println("Name: " + request.getName());
+        System.out.println("Age: " + request.getAge());
+        System.out.println("Gender: " + request.getGender());
+        System.out.println("Temperature: " + request.getTemperature());
+        System.out.println("Days Sick: " + request.getDays());
+        System.out.println("Contagious: " + request.getContagious());
+        System.out.println("Symptoms: " + request.getSymptoms());
+        if (request.getAddress() != null) {
+            System.out.println("Address - Zip: " + request.getAddress().getZip() + 
+                             ", City: " + request.getAddress().getCity() + 
+                             ", State: " + request.getAddress().getState());
+        }
+        System.out.println("========================================\n");
+        
+        // Save query
         Query query = new Query();
-        query.setContact(request.getContact());
+        // Normalize contact: remove all non-numeric characters
+        String normalizedContact = request.getContact().replaceAll("[^0-9]", "");
+        query.setContact(normalizedContact);
         query.setName(request.getName());
         query.setAge(request.getAge());
         query.setGender(request.getGender());
@@ -72,27 +100,73 @@ public class QueryService {
         query.setContagious(request.getContagious());
         query.setAttended(0);
         
-        queryRepository.save(query);
+        // Convert symptoms list to JSON string
+        try {
+            String symptomsJson = objectMapper.writeValueAsString(request.getSymptoms());
+            query.setSymptoms(symptomsJson);
+        } catch (Exception e) {
+            System.out.println("Error converting symptoms to JSON: " + e.getMessage());
+            query.setSymptoms("[]");
+        }
+        
+        Query savedQuery = queryRepository.save(query);
+        System.out.println("Query saved with ID: " + savedQuery.getQid());
+        
+        // Save patient location
+        if (request.getAddress() != null) {
+            try {
+                PatientLocation location = new PatientLocation();
+                location.setQid(savedQuery.getQid());
+                location.setPincode(request.getAddress().getZip());
+                location.setCity(request.getAddress().getCity());
+                location.setState(request.getAddress().getState());
+                
+                patientLocationRepository.save(location);
+                System.out.println("Patient location saved for Query ID: " + savedQuery.getQid());
+            } catch (Exception e) {
+                System.out.println("Error saving patient location: " + e.getMessage());
+            }
+        }
     }
     
-    public List<QueryResponse> getQueriesByContact(String contact) {
-        List<Query> queries = queryRepository.findByContact(contact);
-        List<QueryResponse> responses = new ArrayList<>();
+    public List<QueryResponseDto> getQueriesByContact(String contact) {
+        // Normalize contact: remove all non-numeric characters
+        String normalizedContact = contact.replaceAll("[^0-9]", "");
+        List<Query> queries = queryRepository.findByContact(normalizedContact);
+        List<QueryResponseDto> responses = new ArrayList<>();
         
         for (Query query : queries) {
-            QueryResponse response = new QueryResponse();
-            response.setQid(query.getQid());
-            response.setContact(query.getContact());
+            QueryResponseDto response = new QueryResponseDto();
+            response.setName(query.getName());
             response.setAttended(query.getAttended());
             
+            // Set date - handle null case
+            String dateStr = "";
+            if (query.getReceivedAt() != null) {
+                dateStr = query.getReceivedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+            }
+            response.setDate(dateStr);
+            
             if (query.getAttended() == 1) {
+                // Query has been attended by a doctor, fetch attended details
                 attendedRepository.findByQid(query.getQid()).ifPresent(attended -> {
                     response.setDoctor(attended.getDoctor());
+                    response.setHospital(attended.getHospital());
+                    response.setCity(attended.getCity());
                     response.setTreatment(attended.getTreatment());
-                    response.setRemarks(attended.getRemarks());
-                    response.setAttendedAt(attended.getAttendedAt()
-                        .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+                    response.setDiagnosis(attended.getDiagnosis());
+                    response.setAdvice(attended.getAdvice());
+                    response.setAppointment(attended.getAppointment());
                 });
+            } else {
+                // Query is pending, set default values for Flutter app
+                response.setDoctor("Pending");
+                response.setHospital("Unknown Hospital");
+                response.setCity("Unknown City");
+                response.setTreatment("");
+                response.setDiagnosis("Under Observation");
+                response.setAdvice("No specific advice");
+                response.setAppointment("Not Applicable");
             }
             
             responses.add(response);
@@ -114,8 +188,12 @@ public class QueryService {
         attended.setQid(request.getQid());
         attended.setContact(request.getContact());
         attended.setDoctor(request.getDoctor());
+        attended.setHospital(request.getHospital());
+        attended.setCity(request.getCity());
+        attended.setDiagnosis(request.getDiagnosis());
         attended.setTreatment(request.getTreatment());
-        attended.setRemarks(request.getRemarks() != null ? request.getRemarks() : "");
+        attended.setAdvice(request.getAdvice() != null ? request.getAdvice() : "");
+        attended.setAppointment(request.getAppointment() != null ? request.getAppointment() : "");
         
         attendedRepository.save(attended);
     }

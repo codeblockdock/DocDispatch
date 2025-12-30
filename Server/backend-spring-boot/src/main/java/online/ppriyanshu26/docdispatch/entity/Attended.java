@@ -51,10 +51,22 @@ public class Attended {
     private String doctor;
     
     @Column(nullable = false, length = 255)
+    private String hospital;
+    
+    @Column(nullable = false, length = 100)
+    private String city;
+    
+    @Column(nullable = false, length = 255)
+    private String diagnosis;
+    
+    @Column(nullable = false, length = 255)
     private String treatment;
     
     @Column(length = 255)
-    private String remarks;
+    private String advice;
+    
+    @Column(nullable = false, length = 50)
+    private String appointment;
     
     @Column(name = "attended_at", nullable = false, columnDefinition = "DATETIME DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime attendedAt;
@@ -79,8 +91,20 @@ public class Attended {
     public String getTreatment() { return treatment; }
     public void setTreatment(String treatment) { this.treatment = treatment; }
     
-    public String getRemarks() { return remarks; }
-    public void setRemarks(String remarks) { this.remarks = remarks; }
+    public String getHospital() { return hospital; }
+    public void setHospital(String hospital) { this.hospital = hospital; }
+    
+    public String getCity() { return city; }
+    public void setCity(String city) { this.city = city; }
+    
+    public String getDiagnosis() { return diagnosis; }
+    public void setDiagnosis(String diagnosis) { this.diagnosis = diagnosis; }
+    
+    public String getAdvice() { return advice; }
+    public void setAdvice(String advice) { this.advice = advice; }
+    
+    public String getAppointment() { return appointment; }
+    public void setAppointment(String appointment) { this.appointment = appointment; }
     
     public LocalDateTime getAttendedAt() { return attendedAt; }
     public void setAttendedAt(LocalDateTime attendedAt) { this.attendedAt = attendedAt; }
