@@ -35,12 +35,15 @@ package online.ppriyanshu26.docdispatch.service;
 
 import online.ppriyanshu26.docdispatch.dto.AddQueryRequest;
 import online.ppriyanshu26.docdispatch.dto.AttendQueryRequest;
+import online.ppriyanshu26.docdispatch.dto.DiseasePrediction;
 import online.ppriyanshu26.docdispatch.dto.QueryResponseDto;
 import online.ppriyanshu26.docdispatch.entity.Attended;
 import online.ppriyanshu26.docdispatch.entity.PatientLocation;
+import online.ppriyanshu26.docdispatch.entity.PredictedDisease;
 import online.ppriyanshu26.docdispatch.entity.Query;
 import online.ppriyanshu26.docdispatch.repository.AttendedRepository;
 import online.ppriyanshu26.docdispatch.repository.PatientLocationRepository;
+import online.ppriyanshu26.docdispatch.repository.PredictedDiseaseRepository;
 import online.ppriyanshu26.docdispatch.repository.QueryRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,14 +60,20 @@ public class QueryService {
     private final QueryRepository queryRepository;
     private final AttendedRepository attendedRepository;
     private final PatientLocationRepository patientLocationRepository;
+    private final PredictedDiseaseRepository predictedDiseaseRepository;
+    private final PredictionService predictionService;
     private final ObjectMapper objectMapper;
     
     @Autowired
     public QueryService(QueryRepository queryRepository, AttendedRepository attendedRepository, 
-                       PatientLocationRepository patientLocationRepository) {
+                       PatientLocationRepository patientLocationRepository,
+                       PredictedDiseaseRepository predictedDiseaseRepository,
+                       PredictionService predictionService) {
         this.queryRepository = queryRepository;
         this.attendedRepository = attendedRepository;
         this.patientLocationRepository = patientLocationRepository;
+        this.predictedDiseaseRepository = predictedDiseaseRepository;
+        this.predictionService = predictionService;
         this.objectMapper = new ObjectMapper();
     }
     
@@ -126,6 +135,34 @@ public class QueryService {
             } catch (Exception e) {
                 System.out.println("Error saving patient location: " + e.getMessage());
             }
+        }
+        
+        // Predict disease if symptoms count is 5 or more
+        if (request.getSymptoms() != null && request.getSymptoms().size() >= 5) {
+            try {
+                System.out.println("Symptoms count >= 5, predicting disease...");
+                List<DiseasePrediction> predictions = predictionService.predictDisease(request.getSymptoms());
+                
+                if (predictions != null && !predictions.isEmpty()) {
+                    // Get the top predicted disease (first one has highest probability)
+                    String topDisease = predictions.get(0).getDisease();
+                    String symptomsJson = objectMapper.writeValueAsString(request.getSymptoms());
+                    
+                    // Save to predicted_disease table
+                    PredictedDisease predictedDisease = new PredictedDisease();
+                    predictedDisease.setQid(savedQuery.getQid());
+                    predictedDisease.setSymptoms(symptomsJson);
+                    predictedDisease.setDisease(topDisease);
+                    
+                    predictedDiseaseRepository.save(predictedDisease);
+                    System.out.println("Predicted disease saved: " + topDisease + " for Query ID: " + savedQuery.getQid());
+                }
+            } catch (Exception e) {
+                System.out.println("Error predicting disease: " + e.getMessage());
+                e.printStackTrace();
+            }
+        } else {
+            System.out.println("Symptoms count < 5, skipping disease prediction");
         }
     }
     

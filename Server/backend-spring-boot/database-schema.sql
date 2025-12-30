@@ -38,3 +38,10 @@ CREATE TABLE IF NOT EXISTS queries (
     attended TINYINT(1) NOT NULL DEFAULT 0,
     received_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Create predicted_disease table
+CREATE TABLE IF NOT EXISTS predicted_disease (
+    qid INT NOT NULL PRIMARY KEY,
+    symptoms JSON NOT NULL,
+    disease VARCHAR(255) NOT NULL
+);
