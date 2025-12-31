@@ -1,0 +1,223 @@
+.patient-modal {
+  max-width: 700px;
+  max-height: 90vh;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  color: var(--gray-400);
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius);
+  transition: all 0.2s;
+}
+
+.modal-close:hover {
+  background: var(--gray-100);
+  color: var(--gray-600);
+}
+
+/* Patient Info Section */
+.patient-info-section {
+  margin-bottom: 24px;
+}
+
+.patient-info-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.patient-avatar-large {
+  width: 64px;
+  height: 64px;
+  background: linear-gradient(135deg, #1e40af, #3b82f6);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.patient-info-main h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--gray-900);
+  margin-bottom: 4px;
+}
+
+.patient-meta {
+  color: var(--gray-500);
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+/* Details Grid */
+.details-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  background: var(--gray-50);
+  padding: 20px;
+  border-radius: var(--radius-lg);
+  margin-bottom: 24px;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.detail-label {
+  font-size: 12px;
+  color: var(--gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.detail-value {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--gray-800);
+}
+
+/* Prediction Section */
+.prediction-section h4,
+.symptoms-section h4,
+.attend-section h4 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray-700);
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.prediction-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--gray-50);
+  padding: 20px;
+  border-radius: var(--radius-lg);
+  margin-bottom: 24px;
+}
+
+.prediction-disease,
+.prediction-probability {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.prediction-label {
+  font-size: 12px;
+  color: var(--gray-500);
+}
+
+.prediction-value {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--gray-900);
+}
+
+.probability-circle {
+  position: relative;
+  width: 60px;
+  height: 60px;
+}
+
+.probability-circle svg {
+  transform: rotate(-90deg);
+}
+
+.probability-circle span {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--gray-800);
+}
+
+/* Symptoms Section */
+.symptoms-section {
+  margin-bottom: 24px;
+}
+
+.symptoms-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.symptom-chip {
+  background: var(--primary);
+  color: white;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* Attend Section */
+.attend-section {
+  border-top: 1px solid var(--gray-200);
+  padding-top: 24px;
+}
+
+.attend-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.attend-header h4 {
+  margin-bottom: 0;
+}
+
+.attend-form {
+  background: var(--gray-50);
+  padding: 20px;
+  border-radius: var(--radius-lg);
+}
+
+.attend-form .form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.attend-form .btn {
+  margin-top: 8px;
+}
+
+.attend-form textarea {
+  resize: vertical;
+  min-height: 60px;
+}
+
+@media (max-width: 640px) {
+  .details-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .prediction-card {
+    flex-direction: column;
+    gap: 20px;
+    align-items: flex-start;
+  }
+  
+  .attend-form .form-row {
+    grid-template-columns: 1fr;
+  }
+}

@@ -4,9 +4,14 @@ import online.anshu.docdispatch.entity.PatientLocation;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface PatientLocationRepository extends MongoRepository<PatientLocation, String> {
     Optional<PatientLocation> findByQueryId(String queryId);
+    List<PatientLocation> findByState(String state);
+    List<PatientLocation> findByStateIgnoreCase(String state);
+    List<PatientLocation> findByCity(String city);
+    List<PatientLocation> findByPincode(String pincode);
 }

@@ -1,0 +1,156 @@
+.table-loading,
+.table-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+  color: var(--gray-500);
+}
+
+.table-loading p {
+  margin-top: 16px;
+  font-size: 14px;
+}
+
+.table-empty svg {
+  color: var(--gray-300);
+  margin-bottom: 16px;
+}
+
+.table-empty h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--gray-700);
+  margin-bottom: 8px;
+}
+
+.table-empty p {
+  font-size: 14px;
+  max-width: 300px;
+}
+
+/* Patient Name Cell */
+.patient-name-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.patient-avatar {
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, #1e40af, #3b82f6);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.patient-name {
+  display: block;
+  font-weight: 500;
+  color: var(--gray-800);
+}
+
+.patient-contact {
+  display: block;
+  font-size: 12px;
+  color: var(--gray-500);
+}
+
+/* Symptoms Cell */
+.symptoms-cell {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  max-width: 200px;
+}
+
+.symptom-tag {
+  display: inline-block;
+  background: var(--gray-100);
+  color: var(--gray-600);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.symptom-more {
+  font-size: 11px;
+  color: var(--gray-400);
+  font-style: italic;
+}
+
+/* Disease Name */
+.disease-name {
+  font-weight: 500;
+  color: var(--gray-700);
+}
+
+/* Probability */
+.probability {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 120px;
+}
+
+.probability-bar {
+  flex: 1;
+  height: 6px;
+  background: var(--gray-200);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.probability-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.probability span {
+  font-size: 13px;
+  font-weight: 600;
+  min-width: 35px;
+}
+
+.prob-high .probability-fill { background: #ef4444; }
+.prob-high span { color: #dc2626; }
+
+.prob-medium .probability-fill { background: #f59e0b; }
+.prob-medium span { color: #d97706; }
+
+.prob-low .probability-fill { background: #10b981; }
+.prob-low span { color: #059669; }
+
+/* Actions Cell */
+.actions-cell {
+  display: flex;
+  gap: 8px;
+}
+
+.actions-cell .btn {
+  white-space: nowrap;
+}
+
+/* Table Footer */
+.table-footer {
+  padding: 16px 20px;
+  border-top: 1px solid var(--gray-100);
+  font-size: 13px;
+  color: var(--gray-500);
+}
+
+@media (max-width: 1024px) {
+  .table {
+    min-width: 900px;
+  }
+}

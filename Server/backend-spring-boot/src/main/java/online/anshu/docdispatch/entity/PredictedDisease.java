@@ -13,6 +13,8 @@ public class PredictedDisease {
     
     private String disease;
     
+    private double probability;
+    
     // Constructors
     public PredictedDisease() {}
     
@@ -20,6 +22,13 @@ public class PredictedDisease {
         this.queryId = queryId;
         this.symptoms = symptoms;
         this.disease = disease;
+    }
+    
+    public PredictedDisease(String queryId, String symptoms, String disease, double probability) {
+        this.queryId = queryId;
+        this.symptoms = symptoms;
+        this.disease = disease;
+        this.probability = probability;
     }
     
     // Getters and Setters
@@ -31,4 +40,7 @@ public class PredictedDisease {
     
     public String getDisease() { return disease; }
     public void setDisease(String disease) { this.disease = disease; }
+    
+    public double getProbability() { return probability; }
+    public void setProbability(double probability) { this.probability = probability; }
 }

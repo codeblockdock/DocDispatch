@@ -1,0 +1,119 @@
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.stats-card {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: var(--shadow);
+  transition: transform 0.2s, box-shadow 0.2s;
+  border-left: 4px solid transparent;
+}
+
+.stats-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.stats-card-blue { border-left-color: #3b82f6; }
+.stats-card-red { border-left-color: #ef4444; }
+.stats-card-green { border-left-color: #10b981; }
+.stats-card-orange { border-left-color: #f59e0b; }
+.stats-card-teal { border-left-color: #14b8a6; }
+.stats-card-purple { border-left-color: #8b5cf6; }
+
+.stats-card-header {
+  margin-bottom: 16px;
+}
+
+.stats-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stats-icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.stats-icon-blue { background: #dbeafe; color: #2563eb; }
+.stats-icon-red { background: #fee2e2; color: #dc2626; }
+.stats-icon-green { background: #d1fae5; color: #059669; }
+.stats-icon-orange { background: #fef3c7; color: #d97706; }
+.stats-icon-teal { background: #ccfbf1; color: #0d9488; }
+.stats-icon-purple { background: #ede9fe; color: #7c3aed; }
+
+.stats-title {
+  font-size: 13px;
+  color: var(--gray-500);
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.stats-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--gray-900);
+  line-height: 1.2;
+}
+
+.stats-subtitle {
+  font-size: 12px;
+  color: var(--gray-400);
+  margin-top: 4px;
+}
+
+/* Loading State */
+.stats-card-loading {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.stats-skeleton {
+  background: var(--gray-200);
+  border-radius: var(--radius);
+}
+
+.stats-skeleton-icon {
+  width: 44px;
+  height: 44px;
+  margin-bottom: 16px;
+}
+
+.stats-skeleton-text {
+  width: 80px;
+  height: 14px;
+  margin-bottom: 8px;
+}
+
+.stats-skeleton-value {
+  width: 60px;
+  height: 28px;
+}
+
+@media (max-width: 640px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  
+  .stats-card {
+    padding: 16px;
+  }
+  
+  .stats-value {
+    font-size: 24px;
+  }
+}

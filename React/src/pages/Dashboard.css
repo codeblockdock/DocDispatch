@@ -1,0 +1,97 @@
+.dashboard {
+  min-height: 100vh;
+  background: var(--gray-50);
+}
+
+.dashboard-main {
+  padding: 32px 0;
+}
+
+.dashboard-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.dashboard-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin-bottom: 4px;
+}
+
+.dashboard-subtitle {
+  color: var(--gray-500);
+  font-size: 15px;
+}
+
+.state-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #1e40af, #3b82f6);
+  color: white;
+  padding: 2px 12px;
+  border-radius: 20px;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+/* Filters */
+.filters-card {
+  background: white;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  padding: 20px 24px;
+  margin-bottom: 24px;
+}
+
+.filters-form {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.filter-group {
+  flex: 1;
+  min-width: 180px;
+}
+
+.filter-group .form-input {
+  width: 100%;
+}
+
+.filters-form .btn {
+  height: 44px;
+}
+
+/* Stats Grid is in StatsCards.css */
+
+@media (max-width: 768px) {
+  .dashboard-main {
+    padding: 20px 0;
+  }
+  
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .dashboard-title {
+    font-size: 24px;
+  }
+  
+  .filters-form {
+    flex-direction: column;
+  }
+  
+  .filter-group {
+    width: 100%;
+  }
+  
+  .filters-form .btn {
+    width: 100%;
+  }
+}

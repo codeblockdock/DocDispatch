@@ -121,7 +121,7 @@ public class QueryService {
         List<Query> queries = queryRepository.findByContact(normalizedContact);
         List<QueryResponseDto> responses = new ArrayList<>();
         
-        SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH-mm-ss");
+        SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
         formatter.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
         
         for (Query query : queries) {

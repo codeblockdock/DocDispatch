@@ -1,0 +1,235 @@
+import React, { useState, useEffect, useCallback } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { patientAPI, statsAPI } from '../services/api';
+import Header from '../components/Header';
+import StatsCards from '../components/StatsCards';
+import PatientTable from '../components/PatientTable';
+import PatientModal from '../components/PatientModal';
+import DeleteConfirmModal from '../components/DeleteConfirmModal';
+import './Dashboard.css';
+
+function Dashboard() {
+  const { user } = useAuth();
+  const [patients, setPatients] = useState([]);
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  
+  // Filters
+  const [filters, setFilters] = useState({
+    search: '',
+    disease: '',
+    city: '',
+    pincode: '',
+  });
+  
+  // Modals
+  const [selectedPatient, setSelectedPatient] = useState(null);
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [patientToDelete, setPatientToDelete] = useState(null);
+
+  const fetchData = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError('');
+      
+      const [patientsRes, statsRes] = await Promise.all([
+        patientAPI.getAll(filters),
+        statsAPI.get(),
+      ]);
+      
+      setPatients(patientsRes.data);
+      setStats(statsRes.data);
+    } catch (err) {
+      console.error('Error fetching data:', err);
+      setError('Failed to load data. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  }, [filters]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
+    setFilters(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    fetchData();
+  };
+
+  const handleClearFilters = () => {
+    setFilters({
+      search: '',
+      disease: '',
+      city: '',
+      pincode: '',
+    });
+  };
+
+  const handleView = async (patient) => {
+    try {
+      const response = await patientAPI.getById(patient.id);
+      setSelectedPatient(response.data);
+      setShowViewModal(true);
+    } catch (err) {
+      console.error('Error fetching patient details:', err);
+    }
+  };
+
+  const handleDeleteClick = (patient) => {
+    setPatientToDelete(patient);
+    setShowDeleteModal(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!patientToDelete) return;
+    
+    try {
+      await patientAPI.delete(patientToDelete.id);
+      setShowDeleteModal(false);
+      setPatientToDelete(null);
+      fetchData();
+    } catch (err) {
+      console.error('Error deleting patient:', err);
+    }
+  };
+
+  return (
+    <div className="dashboard">
+      <Header />
+      
+      <main className="dashboard-main">
+        <div className="container">
+          {/* Page Header */}
+          <div className="dashboard-header">
+            <div>
+              <h1 className="dashboard-title">Patient Dashboard</h1>
+              <p className="dashboard-subtitle">
+                Viewing patients from <span className="state-badge">{user?.state}</span>
+              </p>
+            </div>
+            <button className="btn btn-primary" onClick={fetchData}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M23 4v6h-6"/>
+                <path d="M1 20v-6h6"/>
+                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+              </svg>
+              Refresh
+            </button>
+          </div>
+
+          {/* Stats Cards */}
+          <StatsCards stats={stats} loading={loading} />
+
+          {/* Filters */}
+          <div className="filters-card">
+            <form onSubmit={handleSearch} className="filters-form">
+              <div className="filter-group">
+                <input
+                  type="text"
+                  name="search"
+                  value={filters.search}
+                  onChange={handleFilterChange}
+                  className="form-input"
+                  placeholder="Search by patient name..."
+                />
+              </div>
+              <div className="filter-group">
+                <input
+                  type="text"
+                  name="disease"
+                  value={filters.disease}
+                  onChange={handleFilterChange}
+                  className="form-input"
+                  placeholder="Filter by disease..."
+                />
+              </div>
+              <div className="filter-group">
+                <input
+                  type="text"
+                  name="city"
+                  value={filters.city}
+                  onChange={handleFilterChange}
+                  className="form-input"
+                  placeholder="Filter by city..."
+                />
+              </div>
+              <div className="filter-group">
+                <input
+                  type="text"
+                  name="pincode"
+                  value={filters.pincode}
+                  onChange={handleFilterChange}
+                  className="form-input"
+                  placeholder="Filter by pincode..."
+                />
+              </div>
+              <button type="submit" className="btn btn-primary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="11" cy="11" r="8"/>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+                Search
+              </button>
+              <button type="button" className="btn btn-secondary" onClick={handleClearFilters}>
+                Clear
+              </button>
+            </form>
+          </div>
+
+          {/* Error Display */}
+          {error && (
+            <div className="alert alert-error">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="15" y1="9" x2="9" y2="15"/>
+                <line x1="9" y1="9" x2="15" y2="15"/>
+              </svg>
+              {error}
+            </div>
+          )}
+
+          {/* Patient Table */}
+          <PatientTable 
+            patients={patients}
+            loading={loading}
+            onView={handleView}
+            onDelete={handleDeleteClick}
+          />
+        </div>
+      </main>
+
+      {/* View Patient Modal */}
+      {showViewModal && selectedPatient && (
+        <PatientModal 
+          patient={selectedPatient}
+          onClose={() => {
+            setShowViewModal(false);
+            setSelectedPatient(null);
+          }}
+          onRefresh={fetchData}
+        />
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && patientToDelete && (
+        <DeleteConfirmModal
+          patient={patientToDelete}
+          onConfirm={handleDeleteConfirm}
+          onCancel={() => {
+            setShowDeleteModal(false);
+            setPatientToDelete(null);
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+export default Dashboard;
