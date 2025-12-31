@@ -1,58 +1,25 @@
-/*
- * QueryService.java - Business Logic Layer for Query Management
- * 
- * PURPOSE:
- * This service class contains the core business logic for managing patient queries
- * and doctor responses. It acts as an intermediary between the controller and
- * the database repositories.
- * 
- * MAIN OPERATIONS:
- * 
- * 1. addQuery(AddQueryRequest) - Creates a new patient query
- *    - Converts DTO to Entity
- *    - Saves query to database
- *    - Uses @Transactional to ensure data consistency
- * 
- * 2. getQueriesByContact(String) - Retrieves all queries for a phone number
- *    - Fetches queries from database
- *    - Joins with attended records if query was answered
- *    - Formats timestamps for display
- *    - Returns formatted response DTOs
- * 
- * 3. attendQuery(AttendQueryRequest) - Doctor responds to patient query
- *    - Updates query status to attended (1)
- *    - Creates new attended record with doctor's response
- *    - Uses @Transactional to ensure both operations succeed or fail together
- * 
- * TRANSACTION MANAGEMENT:
- * @Transactional ensures database operations are atomic - if any step fails,
- * all changes are rolled back to maintain data integrity
- * 
- * DATA FLOW:
- * Controller -> Service (Business Logic) -> Repository (Database Access)
- */
-package online.ppriyanshu26.docdispatch.service;
+package online.anshu.docdispatch.service;
 
-import online.ppriyanshu26.docdispatch.dto.AddQueryRequest;
-import online.ppriyanshu26.docdispatch.dto.AttendQueryRequest;
-import online.ppriyanshu26.docdispatch.dto.DiseasePrediction;
-import online.ppriyanshu26.docdispatch.dto.QueryResponseDto;
-import online.ppriyanshu26.docdispatch.entity.Attended;
-import online.ppriyanshu26.docdispatch.entity.PatientLocation;
-import online.ppriyanshu26.docdispatch.entity.PredictedDisease;
-import online.ppriyanshu26.docdispatch.entity.Query;
-import online.ppriyanshu26.docdispatch.repository.AttendedRepository;
-import online.ppriyanshu26.docdispatch.repository.PatientLocationRepository;
-import online.ppriyanshu26.docdispatch.repository.PredictedDiseaseRepository;
-import online.ppriyanshu26.docdispatch.repository.QueryRepository;
+import online.anshu.docdispatch.dto.AddQueryRequest;
+import online.anshu.docdispatch.dto.AttendQueryRequest;
+import online.anshu.docdispatch.dto.QueryResponseDto;
+import online.anshu.docdispatch.entity.Attended;
+import online.anshu.docdispatch.entity.PatientLocation;
+import online.anshu.docdispatch.entity.Query;
+import online.anshu.docdispatch.repository.AttendedRepository;
+import online.anshu.docdispatch.repository.PatientLocationRepository;
+import online.anshu.docdispatch.repository.QueryRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.time.format.DateTimeFormatter;
+import java.util.Date;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TimeZone;
+import java.time.ZonedDateTime;
+import java.time.ZoneId;
 
 @Service
 public class QueryService {
@@ -60,24 +27,20 @@ public class QueryService {
     private final QueryRepository queryRepository;
     private final AttendedRepository attendedRepository;
     private final PatientLocationRepository patientLocationRepository;
-    private final PredictedDiseaseRepository predictedDiseaseRepository;
     private final PredictionService predictionService;
     private final ObjectMapper objectMapper;
     
     @Autowired
     public QueryService(QueryRepository queryRepository, AttendedRepository attendedRepository, 
                        PatientLocationRepository patientLocationRepository,
-                       PredictedDiseaseRepository predictedDiseaseRepository,
                        PredictionService predictionService) {
         this.queryRepository = queryRepository;
         this.attendedRepository = attendedRepository;
         this.patientLocationRepository = patientLocationRepository;
-        this.predictedDiseaseRepository = predictedDiseaseRepository;
         this.predictionService = predictionService;
         this.objectMapper = new ObjectMapper();
     }
     
-    @Transactional
     public void addQuery(AddQueryRequest request) {
         // ===== PRINT RECEIVED DATA TO TERMINAL =====
         System.out.println("\n========== NEW QUERY RECEIVED ==========");
@@ -108,6 +71,7 @@ public class QueryService {
         query.setDays(request.getDays());
         query.setContagious(request.getContagious());
         query.setAttended(0);
+        query.setReceivedAt(Date.from(ZonedDateTime.now(ZoneId.of("Asia/Kolkata")).toInstant()));
         
         // Convert symptoms list to JSON string
         try {
@@ -119,19 +83,19 @@ public class QueryService {
         }
         
         Query savedQuery = queryRepository.save(query);
-        System.out.println("Query saved with ID: " + savedQuery.getQid());
+        System.out.println("Query saved with ID: " + savedQuery.getId());
         
         // Save patient location
         if (request.getAddress() != null) {
             try {
                 PatientLocation location = new PatientLocation();
-                location.setQid(savedQuery.getQid());
+                location.setQueryId(savedQuery.getId());
                 location.setPincode(request.getAddress().getZip());
                 location.setCity(request.getAddress().getCity());
                 location.setState(request.getAddress().getState());
                 
                 patientLocationRepository.save(location);
-                System.out.println("Patient location saved for Query ID: " + savedQuery.getQid());
+                System.out.println("Patient location saved for Query ID: " + savedQuery.getId());
             } catch (Exception e) {
                 System.out.println("Error saving patient location: " + e.getMessage());
             }
@@ -140,25 +104,10 @@ public class QueryService {
         // Predict disease if symptoms count is 5 or more
         if (request.getSymptoms() != null && request.getSymptoms().size() >= 5) {
             try {
-                System.out.println("Symptoms count >= 5, predicting disease...");
-                List<DiseasePrediction> predictions = predictionService.predictDisease(request.getSymptoms());
-                
-                if (predictions != null && !predictions.isEmpty()) {
-                    // Get the top predicted disease (first one has highest probability)
-                    String topDisease = predictions.get(0).getDisease();
-                    String symptomsJson = objectMapper.writeValueAsString(request.getSymptoms());
-                    
-                    // Save to predicted_disease table
-                    PredictedDisease predictedDisease = new PredictedDisease();
-                    predictedDisease.setQid(savedQuery.getQid());
-                    predictedDisease.setSymptoms(symptomsJson);
-                    predictedDisease.setDisease(topDisease);
-                    
-                    predictedDiseaseRepository.save(predictedDisease);
-                    System.out.println("Predicted disease saved: " + topDisease + " for Query ID: " + savedQuery.getQid());
-                }
+                System.out.println("Symptoms count >= 5, starting background disease prediction...");
+                predictionService.predictAndSaveDisease(request.getSymptoms(), savedQuery.getId());
             } catch (Exception e) {
-                System.out.println("Error predicting disease: " + e.getMessage());
+                System.out.println("Error starting background disease prediction: " + e.getMessage());
                 e.printStackTrace();
             }
         } else {
@@ -172,6 +121,9 @@ public class QueryService {
         List<Query> queries = queryRepository.findByContact(normalizedContact);
         List<QueryResponseDto> responses = new ArrayList<>();
         
+        SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH-mm-ss");
+        formatter.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+        
         for (Query query : queries) {
             QueryResponseDto response = new QueryResponseDto();
             response.setName(query.getName());
@@ -180,13 +132,13 @@ public class QueryService {
             // Set date - handle null case
             String dateStr = "";
             if (query.getReceivedAt() != null) {
-                dateStr = query.getReceivedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+                dateStr = formatter.format(query.getReceivedAt());
             }
             response.setDate(dateStr);
             
             if (query.getAttended() == 1) {
                 // Query has been attended by a doctor, fetch attended details
-                attendedRepository.findByQid(query.getQid()).ifPresent(attended -> {
+                attendedRepository.findByQueryId(query.getId()).ifPresent(attended -> {
                     response.setDoctor(attended.getDoctor());
                     response.setHospital(attended.getHospital());
                     response.setCity(attended.getCity());
@@ -194,16 +146,21 @@ public class QueryService {
                     response.setDiagnosis(attended.getDiagnosis());
                     response.setAdvice(attended.getAdvice());
                     response.setAppointment(attended.getAppointment());
+                    
+                    // Override date with attended timestamp
+                    if (attended.getTimestamp() != null) {
+                        response.setDate(formatter.format(attended.getTimestamp()));
+                    }
                 });
             } else {
-                // Query is pending, set default values for Flutter app
-                response.setDoctor("Pending");
-                response.setHospital("Unknown Hospital");
-                response.setCity("Unknown City");
+                // Query is pending, set empty values for mobile app
+                response.setDoctor("");
+                response.setHospital("");
+                response.setCity("");
                 response.setTreatment("");
-                response.setDiagnosis("Under Observation");
-                response.setAdvice("No specific advice");
-                response.setAppointment("Not Applicable");
+                response.setDiagnosis("");
+                response.setAdvice("");
+                response.setAppointment("");
             }
             
             responses.add(response);
@@ -212,18 +169,16 @@ public class QueryService {
         return responses;
     }
     
-    @Transactional
     public void attendQuery(AttendQueryRequest request) {
         // Update query as attended
-        Query query = queryRepository.findById(request.getQid())
+        Query query = queryRepository.findById(request.getQueryId())
             .orElseThrow(() -> new RuntimeException("Query not found"));
         query.setAttended(1);
         queryRepository.save(query);
         
         // Add attended record
         Attended attended = new Attended();
-        attended.setQid(request.getQid());
-        attended.setContact(request.getContact());
+        attended.setQueryId(request.getQueryId());
         attended.setDoctor(request.getDoctor());
         attended.setHospital(request.getHospital());
         attended.setCity(request.getCity());
@@ -231,6 +186,7 @@ public class QueryService {
         attended.setTreatment(request.getTreatment());
         attended.setAdvice(request.getAdvice() != null ? request.getAdvice() : "");
         attended.setAppointment(request.getAppointment() != null ? request.getAppointment() : "");
+        attended.setTimestamp(Date.from(ZonedDateTime.now(ZoneId.of("Asia/Kolkata")).toInstant()));
         
         attendedRepository.save(attended);
     }

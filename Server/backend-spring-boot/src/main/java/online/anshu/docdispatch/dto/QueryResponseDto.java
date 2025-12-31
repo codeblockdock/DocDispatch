@@ -1,22 +1,4 @@
-/*
- * QueryResponseDto.java - Response DTO for queries list
- * 
- * PURPOSE:
- * Returns query information in the format expected by Flutter app's QueryModel
- * 
- * FIELDS (matches Flutter QueryModel):
- * - name: Patient's name
- * - attended: 0 = pending, 1 = attended
- * - doctor: Doctor's name (or "Pending" if not attended)
- * - hospital: Hospital name (or "Unknown Hospital" if not attended)
- * - city: City name (or "Unknown City" if not attended)
- * - treatment: Treatment details
- * - diagnosis: Diagnosis (or "Under Observation" if not attended)
- * - advice: Doctor's advice
- * - date: Timestamp when query was received
- * - appointment: Appointment details (or "Not Applicable" if not attended)
- */
-package online.ppriyanshu26.docdispatch.dto;
+package online.anshu.docdispatch.dto;
 
 public class QueryResponseDto {
     private String name;

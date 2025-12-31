@@ -1,40 +1,12 @@
-/*
- * PredictionService.java - Service for Disease Prediction using Python ML Model
- * 
- * PURPOSE:
- * This service bridges the Java Spring Boot backend with the Python machine learning
- * model. It executes the Python script and processes the prediction results.
- * 
- * HOW IT WORKS:
- * 1. Receives list of symptoms from controller
- * 2. Converts symptoms to JSON format
- * 3. Executes Python script (predict.py) as a subprocess
- * 4. Passes symptoms as command-line argument
- * 5. Python script loads ML model and predicts diseases
- * 6. Reads JSON output from Python script
- * 7. Converts JSON to Java objects (DiseasePrediction DTOs)
- * 8. Returns top 3 disease predictions with probabilities
- * 
- * PYTHON INTEGRATION:
- * - Uses ProcessBuilder to execute Python interpreter
- * - Script location: ../../predict.py (relative to backend folder)
- * - Model files: disease_model.pkl, symptom_list.pkl
- * 
- * ERROR HANDLING:
- * - Catches Python execution errors
- * - Returns meaningful error messages if model fails
- * - Logs errors for debugging
- * 
- * REQUIREMENTS:
- * - Python 3.x installed on server
- * - Required Python packages: joblib, pandas, scikit-learn
- * - ML model files must exist in Server directory
- */
-package online.ppriyanshu26.docdispatch.service;
+package online.anshu.docdispatch.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import online.ppriyanshu26.docdispatch.dto.DiseasePrediction;
+import online.anshu.docdispatch.dto.DiseasePrediction;
+import online.anshu.docdispatch.entity.PredictedDisease;
+import online.anshu.docdispatch.repository.PredictedDiseaseRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
@@ -47,6 +19,12 @@ import java.util.Map;
 public class PredictionService {
     
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final PredictedDiseaseRepository predictedDiseaseRepository;
+    
+    @Autowired
+    public PredictionService(PredictedDiseaseRepository predictedDiseaseRepository) {
+        this.predictedDiseaseRepository = predictedDiseaseRepository;
+    }
     
     public List<DiseasePrediction> predictDisease(List<String> symptoms) throws Exception {
         // Prepare JSON input for Python script
@@ -104,5 +82,31 @@ public class PredictionService {
         );
         
         return predictions;
+    }
+    
+    @Async
+    public void predictAndSaveDisease(List<String> symptoms, String queryId) {
+        try {
+            System.out.println("Starting background disease prediction for Query ID: " + queryId);
+            List<DiseasePrediction> predictions = predictDisease(symptoms);
+            
+            if (predictions != null && !predictions.isEmpty()) {
+                // Get the top predicted disease (first one has highest probability)
+                String topDisease = predictions.get(0).getDisease();
+                String symptomsJson = objectMapper.writeValueAsString(symptoms);
+                
+                // Save to predicted_disease collection
+                PredictedDisease predictedDisease = new PredictedDisease();
+                predictedDisease.setQueryId(queryId);
+                predictedDisease.setSymptoms(symptomsJson);
+                predictedDisease.setDisease(topDisease);
+                
+                predictedDiseaseRepository.save(predictedDisease);
+                System.out.println("Predicted disease saved asynchronously: " + topDisease + " for Query ID: " + queryId);
+            }
+        } catch (Exception e) {
+            System.out.println("Error in background disease prediction for Query ID " + queryId + ": " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 }
