@@ -24,16 +24,24 @@ class QueryModel {
   });
 
   factory QueryModel.fromJson(Map<String, dynamic> json) {
+    String getString(String key, String defaultValue) {
+      final val = json[key];
+      if (val == null || val is! String || val.trim().isEmpty) {
+        return defaultValue;
+      }
+      return val;
+    }
+
     return QueryModel(
-      name: json['name'] ?? 'Unknown',
+      name: getString('name', 'Unknown'),
       attended: json['attended'] ?? 0,
-      doctor: json['doctor'] ?? 'Pending',
-      hospital: json['hospital'] ?? 'Unknown Hospital',
-      city: json['city'] ?? 'Unknown City',
-      treatment: json['treatment'] ?? '',
-      diagnosis: json['diagnosis'] ?? 'Under Observation',
-      advice: json['advice'] ?? 'No specific advice',
-      date: json['date'] ?? '',
+      doctor: getString('doctor', 'Pending'),
+      hospital: getString('hospital', 'Unknown Hospital'),
+      city: getString('city', 'Unknown City'),
+      diagnosis: getString('diagnosis', 'Healthy'),
+      treatment: getString('treatment', 'Not Applicable'),
+      advice: getString('advice', 'No specific advice'),
+      date: getString('date', ''),
       appointment: (json['appointment'] == null || json['appointment'] == "")
           ? "Not Applicable"
           : json['appointment'],

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
-import 'models/query_model.dart';
-import 'utils/theme_manager.dart';
-import 'utils/query_utils.dart';
+import '../models/query_model.dart';
+import '../utils/theme_manager.dart';
+import '../utils/query_utils.dart';
 
 class QueriesScreen extends StatefulWidget {
   const QueriesScreen({super.key});
@@ -92,9 +92,11 @@ class ShimmerLoading extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Shimmer.fromColors(
-      baseColor: Colors.grey[300]!,
-      highlightColor: Colors.grey[100]!,
+      baseColor: isDark ? Colors.grey[800]! : Colors.grey[300]!,
+      highlightColor: isDark ? Colors.grey[700]! : Colors.grey[100]!,
       child: ListView.builder(
         itemCount: 6,
         itemBuilder: (_, _) => Padding(
@@ -102,7 +104,7 @@ class ShimmerLoading extends StatelessWidget {
           child: Container(
             height: 80,
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: isDark ? Colors.black : Colors.white,
               borderRadius: BorderRadius.circular(8),
             ),
           ),
@@ -118,6 +120,9 @@ class QueryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final secondaryTextColor = isDark ? Colors.grey[400] : Colors.grey[600];
+
     if (q.attended == 0) {
       return Card(
         margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -125,6 +130,10 @@ class QueryCard extends StatelessWidget {
           leading: const Icon(Icons.access_time, color: Colors.orange),
           title: Text(q.name),
           subtitle: const Text("Status: Pending review"),
+          trailing: Text(
+            q.date,
+            style: TextStyle(color: secondaryTextColor, fontSize: 12),
+          ),
           onTap: () {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
@@ -139,6 +148,10 @@ class QueryCard extends StatelessWidget {
 
     final bool hasAppt = q.appointment != "Not Required" && q.appointment != "Not Applicable";
 
+    final highlightColor = isDark
+        ? Colors.deepPurple.withValues(alpha: 0.3)
+        : Colors.deepPurple.withValues(alpha: 0.1);
+
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       child: ExpansionTile(
@@ -146,30 +159,63 @@ class QueryCard extends StatelessWidget {
         title: Text(q.name),
         subtitle: Text("Diagnosis: ${q.diagnosis}"),
         children: [
-          infoTile(Icons.person, "Doctor", q.doctor, Colors.blue),
-          infoTile(Icons.local_hospital, "Location", "${q.hospital}, ${q.city}", Colors.red),
-          infoTile(Icons.medication, "Treatment", q.treatment, Colors.purpleAccent),
+          infoTile(context, Icons.person, "Doctor", q.doctor, Colors.blue),
+          infoTile(context, Icons.local_hospital, "Location", "${q.hospital}, ${q.city}", Colors.red),
+          infoTile(context, Icons.medication, "Treatment", q.treatment, Colors.purpleAccent),
           Container(
-            color: hasAppt ? Colors.deepPurple.withValues(alpha: 0.1) : null,
+            color: hasAppt ? highlightColor : null,
             child: infoTile(
-                Icons.calendar_month,
-                "Appointment",
-                q.appointment,
-                hasAppt ? Colors.deepPurple : Colors.grey,
-                isBold: hasAppt
+              context,
+              Icons.calendar_month,
+              "Appointment",
+              q.appointment,
+              hasAppt ? Colors.deepPurple[200]! : Colors.grey,
+              isBold: hasAppt,
+              overrideColor: hasAppt && isDark ? Colors.white : null,
             ),
           ),
-          infoTile(Icons.info_outline, "Advice", q.advice, Colors.orange),
+          infoTile(context, Icons.info_outline, "Advice", q.advice, Colors.orange),
+
+          if (q.date.isNotEmpty) ...[
+            const Divider(height: 1),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Icon(Icons.history, size: 16, color: secondaryTextColor),
+                  const SizedBox(width: 6),
+                  Text(
+                    "Attended on: ${q.date}",
+                    style: TextStyle(
+                      color: secondaryTextColor,
+                      fontSize: 12,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ]
         ],
       ),
     );
   }
 
-  Widget infoTile(IconData icon, String title, String sub, Color color, {bool isBold = false}) {
+  Widget infoTile(BuildContext context, IconData icon, String title, String sub, Color iconColor, {bool isBold = false, Color? overrideColor}) {
+    if (sub.isEmpty || sub == "null") return const SizedBox.shrink();
+
     return ListTile(
-      leading: Icon(icon, color: color),
-      title: Text(title),
-      subtitle: Text(sub, style: TextStyle(fontWeight: isBold ? FontWeight.bold : FontWeight.normal)),
+      leading: Icon(icon, color: iconColor),
+      title: Text(title, style: const TextStyle(fontSize: 13, color: Colors.grey)),
+      subtitle: Text(
+        sub,
+        style: TextStyle(
+          fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+          fontSize: 15,
+          color: overrideColor ?? Theme.of(context).textTheme.bodyLarge?.color,
+        ),
+      ),
     );
   }
 }
