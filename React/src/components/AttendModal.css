@@ -71,6 +71,64 @@ textarea.form-input {
   min-height: 80px;
 }
 
+/* Select dropdown styles */
+.form-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 16px;
+  padding-right: 2.5rem;
+  cursor: pointer;
+}
+
+.form-select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.form-select option {
+  padding: 0.5rem;
+}
+
+/* Date and Time input styles */
+.date-input,
+.time-input {
+  cursor: pointer;
+  position: relative;
+}
+
+.date-input::-webkit-calendar-picker-indicator,
+.time-input::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  background-color: transparent;
+  padding: 0;
+  margin: 0;
+  position: absolute;
+  right: 0.75rem;
+  width: 20px;
+  height: 20px;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+
+.date-input::-webkit-calendar-picker-indicator:hover,
+.time-input::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
+/* Style for empty date/time inputs */
+.date-input:not(:valid),
+.time-input:not(:valid) {
+  color: #9ca3af;
+}
+
+.date-input:valid,
+.time-input:valid {
+  color: #1f2937;
+}
+
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;

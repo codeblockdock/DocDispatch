@@ -8,6 +8,12 @@ public class DashboardStatsDto {
     private long attendedCases;
     private long pendingCases;
     
+    // Hospital stats
+    private long totalHospitals;
+    private long activeHospitals;
+    private long statesCovered;
+    private long citiesCovered;
+    
     // Getters and Setters
     public long getTotalPatients() { return totalPatients; }
     public void setTotalPatients(long totalPatients) { this.totalPatients = totalPatients; }
@@ -26,4 +32,16 @@ public class DashboardStatsDto {
     
     public long getPendingCases() { return pendingCases; }
     public void setPendingCases(long pendingCases) { this.pendingCases = pendingCases; }
+    
+    public long getTotalHospitals() { return totalHospitals; }
+    public void setTotalHospitals(long totalHospitals) { this.totalHospitals = totalHospitals; }
+    
+    public long getActiveHospitals() { return activeHospitals; }
+    public void setActiveHospitals(long activeHospitals) { this.activeHospitals = activeHospitals; }
+    
+    public long getStatesCovered() { return statesCovered; }
+    public void setStatesCovered(long statesCovered) { this.statesCovered = statesCovered; }
+    
+    public long getCitiesCovered() { return citiesCovered; }
+    public void setCitiesCovered(long citiesCovered) { this.citiesCovered = citiesCovered; }
 }

@@ -2,6 +2,46 @@ import React, { useState, useEffect } from 'react';
 import { patientAPI } from '../services/api';
 import './AttendModal.css';
 
+// List of Indian states and union territories
+const INDIAN_STATES = [
+  'Andhra Pradesh',
+  'Arunachal Pradesh',
+  'Assam',
+  'Bihar',
+  'Chhattisgarh',
+  'Goa',
+  'Gujarat',
+  'Haryana',
+  'Himachal Pradesh',
+  'Jharkhand',
+  'Karnataka',
+  'Kerala',
+  'Madhya Pradesh',
+  'Maharashtra',
+  'Manipur',
+  'Meghalaya',
+  'Mizoram',
+  'Nagaland',
+  'Odisha',
+  'Punjab',
+  'Rajasthan',
+  'Sikkim',
+  'Tamil Nadu',
+  'Telangana',
+  'Tripura',
+  'Uttar Pradesh',
+  'Uttarakhand',
+  'West Bengal',
+  'Andaman and Nicobar Islands',
+  'Chandigarh',
+  'Dadra and Nagar Haveli and Daman and Diu',
+  'Delhi',
+  'Jammu and Kashmir',
+  'Ladakh',
+  'Lakshadweep',
+  'Puducherry',
+];
+
 function AttendModal({ patient, onClose, onRefresh }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -14,7 +54,7 @@ function AttendModal({ patient, onClose, onRefresh }) {
   const [formData, setFormData] = useState({
     diagnosis: '',
     treatment: '',
-    appointment: '',
+    appointmentDate: '',
     appointmentTime: '',
     advice: '',
   });
@@ -50,29 +90,15 @@ function AttendModal({ patient, onClose, onRefresh }) {
   const formatDateTimeToISO = (dateStr, timeStr) => {
     if (!dateStr || !timeStr) return '';
     
-    // Parse date in dd/mm/yyyy format
-    const [day, month, year] = dateStr.split('/');
-    
-    // Parse time in HH:MM AM/PM format
-    let [hours, minutes] = timeStr.split(':');
-    const meridiem = timeStr.includes('AM') ? 'AM' : 'PM';
-    
-    hours = parseInt(hours);
-    minutes = parseInt(minutes);
-    
-    // Convert to 24-hour format
-    if (meridiem === 'PM' && hours !== 12) {
-      hours += 12;
-    } else if (meridiem === 'AM' && hours === 12) {
-      hours = 0;
-    }
-    
-    // Pad with zeros
-    const paddedHours = hours.toString().padStart(2, '0');
-    const paddedMinutes = minutes.toString().padStart(2, '0');
-    
-    // Create ISO string
-    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${paddedHours}:${paddedMinutes}:00`;
+    // dateStr is in YYYY-MM-DD format from date input
+    // timeStr is in HH:MM format from time input
+    return `${dateStr}T${timeStr}:00`;
+  };
+
+  // Get minimum date (today) for the date picker
+  const getMinDate = () => {
+    const today = new Date();
+    return today.toISOString().split('T')[0];
   };
 
   const handleAttend = async () => {
@@ -97,8 +123,8 @@ function AttendModal({ patient, onClose, onRefresh }) {
     setError('');
     
     try {
-      const appointmentValue = formData.appointment && formData.appointmentTime 
-        ? formatDateTimeToISO(formData.appointment, formData.appointmentTime)
+      const appointmentValue = formData.appointmentDate && formData.appointmentTime 
+        ? formatDateTimeToISO(formData.appointmentDate, formData.appointmentTime)
         : '';
 
       const attendData = {
@@ -195,14 +221,19 @@ function AttendModal({ patient, onClose, onRefresh }) {
               <div className="form-row">
                 <div className="form-group">
                   <label className="form-label">State *</label>
-                  <input
-                    type="text"
+                  <select
                     name="state"
                     value={hospitalData.state}
                     onChange={handleDoctorChange}
-                    className="form-input"
-                    placeholder="Enter state"
-                  />
+                    className="form-input form-select"
+                  >
+                    <option value="">Select State</option>
+                    {INDIAN_STATES.map((state) => (
+                      <option key={state} value={state}>
+                        {state}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <div className="form-group">
                   <label className="form-label">Hospital Name *</label>
@@ -265,38 +296,44 @@ function AttendModal({ patient, onClose, onRefresh }) {
             </div>
 
             <div className="form-section">
-              <h4>Appointment</h4>
+              <h4>Next Appointment</h4>
               <p className="section-description">
-                if empty: Not Applicable
+                Schedule a follow-up appointment (optional)
               </p>
               <div className="form-row">
                 <div className="form-group">
                   <label className="form-label">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{marginRight: '6px', verticalAlign: 'middle'}}>
+                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                      <line x1="16" y1="2" x2="16" y2="6"/>
+                      <line x1="8" y1="2" x2="8" y2="6"/>
+                      <line x1="3" y1="10" x2="21" y2="10"/>
+                    </svg>
                     Appointment Date
-                    <span className="form-optional">(dd/mm/yyyy)</span>
                   </label>
                   <input
-                    type="text"
-                    name="appointment"
-                    value={formData.appointment}
+                    type="date"
+                    name="appointmentDate"
+                    value={formData.appointmentDate}
                     onChange={handleChange}
-                    className="form-input"
-                    placeholder="dd/mm/yyyy"
-                    pattern="\d{2}/\d{2}/\d{4}"
+                    className="form-input date-input"
+                    min={getMinDate()}
                   />
                 </div>
                 <div className="form-group">
                   <label className="form-label">
-                    Time
-                    <span className="form-optional">(hh:mm AM/PM)</span>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{marginRight: '6px', verticalAlign: 'middle'}}>
+                      <circle cx="12" cy="12" r="10"/>
+                      <polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                    Appointment Time
                   </label>
                   <input
-                    type="text"
+                    type="time"
                     name="appointmentTime"
                     value={formData.appointmentTime}
                     onChange={handleChange}
-                    className="form-input"
-                    placeholder="hh:mm AM/PM"
+                    className="form-input time-input"
                   />
                 </div>
               </div>

@@ -356,6 +356,10 @@ public class HospitalService {
         long attendedCases = 0;
         long pendingCases = 0;
         
+        // Track unique states and cities from patient locations
+        Set<String> uniqueStates = new HashSet<>();
+        Set<String> uniqueCities = new HashSet<>();
+        
         Date twentyFourHoursAgo = Date.from(ZonedDateTime.now(ZoneId.of("Asia/Kolkata")).minus(24, ChronoUnit.HOURS).toInstant());
         
         for (PatientLocation location : locations) {
@@ -364,6 +368,14 @@ public class HospitalService {
             
             Query query = queryOpt.get();
             totalPatients++;
+            
+            // Track unique states and cities
+            if (location.getState() != null && !location.getState().isEmpty()) {
+                uniqueStates.add(location.getState().toLowerCase());
+            }
+            if (location.getCity() != null && !location.getCity().isEmpty()) {
+                uniqueCities.add(location.getCity().toLowerCase());
+            }
             
             if (query.getAttended() == 1) {
                 attendedCases++;
@@ -389,15 +401,26 @@ public class HospitalService {
             }
         }
         
+        // Calculate hospital stats
+        List<Hospital> allHospitals = hospitalRepository.findAll();
+        long totalHospitals = allHospitals.stream().filter(h -> !h.isAdmin()).count();
+        long activeHospitals = allHospitals.stream().filter(h -> !h.isAdmin() && h.isActive()).count();
+        
         stats.setTotalPatients(totalPatients);
         stats.setHighRiskCases(highRiskCases);
         stats.setNewlyReported(newlyReported);
         stats.setEmergencyPriority(emergencyPriority);
         stats.setAttendedCases(attendedCases);
         stats.setPendingCases(pendingCases);
+        stats.setTotalHospitals(totalHospitals);
+        stats.setActiveHospitals(activeHospitals);
+        stats.setStatesCovered(uniqueStates.size());
+        stats.setCitiesCovered(uniqueCities.size());
         
         System.out.println("Stats for " + context + " - Total: " + totalPatients + ", High Risk: " + highRiskCases + 
-                          ", New: " + newlyReported + ", Emergency: " + emergencyPriority);
+                          ", New: " + newlyReported + ", Emergency: " + emergencyPriority +
+                          ", Hospitals: " + totalHospitals + ", Active: " + activeHospitals +
+                          ", States: " + uniqueStates.size() + ", Cities: " + uniqueCities.size());
         System.out.println("===========================================");
         
         return stats;
