@@ -5,7 +5,8 @@ import Header from '../components/Header';
 import StatsCards from '../components/StatsCards';
 import PatientTable from '../components/PatientTable';
 import PatientModal from '../components/PatientModal';
-import DeleteConfirmModal from '../components/DeleteConfirmModal';
+import AttendModal from '../components/AttendModal';
+import ReceiptModal from '../components/ReceiptModal';
 import './Dashboard.css';
 
 function Dashboard() {
@@ -18,16 +19,16 @@ function Dashboard() {
   // Filters
   const [filters, setFilters] = useState({
     search: '',
-    disease: '',
     city: '',
     pincode: '',
+    state: '',
   });
   
   // Modals
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [showViewModal, setShowViewModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [patientToDelete, setPatientToDelete] = useState(null);
+  const [showAttendModal, setShowAttendModal] = useState(false);
+  const [showReceiptModal, setShowReceiptModal] = useState(false);
 
   const fetchData = useCallback(async () => {
     try {
@@ -66,7 +67,6 @@ function Dashboard() {
   const handleClearFilters = () => {
     setFilters({
       search: '',
-      disease: '',
       city: '',
       pincode: '',
     });
@@ -82,22 +82,14 @@ function Dashboard() {
     }
   };
 
-  const handleDeleteClick = (patient) => {
-    setPatientToDelete(patient);
-    setShowDeleteModal(true);
+  const handleAttend = (patient) => {
+    setSelectedPatient(patient);
+    setShowAttendModal(true);
   };
 
-  const handleDeleteConfirm = async () => {
-    if (!patientToDelete) return;
-    
-    try {
-      await patientAPI.delete(patientToDelete.id);
-      setShowDeleteModal(false);
-      setPatientToDelete(null);
-      fetchData();
-    } catch (err) {
-      console.error('Error deleting patient:', err);
-    }
+  const handleViewReceipt = (patient) => {
+    setSelectedPatient(patient);
+    setShowReceiptModal(true);
   };
 
   return (
@@ -138,16 +130,6 @@ function Dashboard() {
                   onChange={handleFilterChange}
                   className="form-input"
                   placeholder="Search by patient name..."
-                />
-              </div>
-              <div className="filter-group">
-                <input
-                  type="text"
-                  name="disease"
-                  value={filters.disease}
-                  onChange={handleFilterChange}
-                  className="form-input"
-                  placeholder="Filter by disease..."
                 />
               </div>
               <div className="filter-group">
@@ -200,7 +182,8 @@ function Dashboard() {
             patients={patients}
             loading={loading}
             onView={handleView}
-            onDelete={handleDeleteClick}
+            onAttend={handleAttend}
+            onViewReceipt={handleViewReceipt}
           />
         </div>
       </main>
@@ -217,14 +200,25 @@ function Dashboard() {
         />
       )}
 
-      {/* Delete Confirmation Modal */}
-      {showDeleteModal && patientToDelete && (
-        <DeleteConfirmModal
-          patient={patientToDelete}
-          onConfirm={handleDeleteConfirm}
-          onCancel={() => {
-            setShowDeleteModal(false);
-            setPatientToDelete(null);
+      {/* Attend Patient Modal */}
+      {showAttendModal && selectedPatient && (
+        <AttendModal 
+          patient={selectedPatient}
+          onClose={() => {
+            setShowAttendModal(false);
+            setSelectedPatient(null);
+          }}
+          onRefresh={fetchData}
+        />
+      )}
+
+      {/* View Receipt Modal */}
+      {showReceiptModal && selectedPatient && (
+        <ReceiptModal 
+          patient={selectedPatient}
+          onClose={() => {
+            setShowReceiptModal(false);
+            setSelectedPatient(null);
           }}
         />
       )}

@@ -141,6 +141,12 @@
   white-space: nowrap;
 }
 
+/* Age Cell */
+.age-cell {
+  color: var(--gray-700);
+  font-weight: 500;
+}
+
 /* Table Footer */
 .table-footer {
   padding: 16px 20px;

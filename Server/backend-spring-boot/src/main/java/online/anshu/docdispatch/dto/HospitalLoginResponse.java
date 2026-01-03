@@ -8,6 +8,7 @@ public class HospitalLoginResponse {
     private String city;
     private String message;
     private boolean success;
+    private boolean admin;
     
     public HospitalLoginResponse() {}
     
@@ -36,4 +37,7 @@ public class HospitalLoginResponse {
     
     public boolean isSuccess() { return success; }
     public void setSuccess(boolean success) { this.success = success; }
+    
+    public boolean isAdmin() { return admin; }
+    public void setAdmin(boolean admin) { this.admin = admin; }
 }

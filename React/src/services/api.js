@@ -34,13 +34,13 @@ api.interceptors.response.use(
 // Auth APIs
 export const authAPI = {
   login: (hospitalId, password) => 
-    api.post('/api/hospital/login', { hospitalId, password }),
+    api.post('/hospital/login', { hospitalId, password }),
   
   register: (data) => 
-    api.post('/api/hospital/register', data),
+    api.post('/hospital/register', data),
   
   verify: () => 
-    api.get('/api/hospital/verify'),
+    api.get('/hospital/verify'),
 };
 
 // Patient APIs
@@ -48,19 +48,18 @@ export const patientAPI = {
   getAll: (params = {}) => {
     const queryParams = new URLSearchParams();
     if (params.search) queryParams.append('search', params.search);
-    if (params.disease) queryParams.append('disease', params.disease);
     if (params.city) queryParams.append('city', params.city);
     if (params.pincode) queryParams.append('pincode', params.pincode);
     
     const queryString = queryParams.toString();
-    return api.get(`/api/hospital/patients${queryString ? `?${queryString}` : ''}`);
+    return api.get(`/hospital/patients${queryString ? `?${queryString}` : ''}`);
   },
   
   getById: (id) => 
-    api.get(`/api/hospital/patients/${id}`),
+    api.get(`/hospital/patients/${id}`),
   
   delete: (id) => 
-    api.delete(`/api/hospital/patients/${id}`),
+    api.delete(`/hospital/patients/${id}`),
   
   // Attend/update patient
   attend: (queryId, data) =>
@@ -69,7 +68,7 @@ export const patientAPI = {
 
 // Stats API
 export const statsAPI = {
-  get: () => api.get('/api/hospital/stats'),
+  get: () => api.get('/hospital/stats'),
 };
 
 export default api;

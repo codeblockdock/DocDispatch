@@ -145,7 +145,9 @@ public class QueryService {
                     response.setTreatment(attended.getTreatment());
                     response.setDiagnosis(attended.getDiagnosis());
                     response.setAdvice(attended.getAdvice());
-                    response.setAppointment(attended.getAppointment());
+                    // Format appointment in dd/mm hh:mm AM/PM format
+                    String formattedAppointment = formatAppointmentForMobile(attended.getAppointment());
+                    response.setAppointment(formattedAppointment);
                     
                     // Override date with attended timestamp
                     if (attended.getTimestamp() != null) {
@@ -176,18 +178,47 @@ public class QueryService {
         query.setAttended(1);
         queryRepository.save(query);
         
-        // Add attended record
+        // Add attended record with default values
         Attended attended = new Attended();
         attended.setQueryId(request.getQueryId());
         attended.setDoctor(request.getDoctor());
         attended.setHospital(request.getHospital());
         attended.setCity(request.getCity());
-        attended.setDiagnosis(request.getDiagnosis());
-        attended.setTreatment(request.getTreatment());
-        attended.setAdvice(request.getAdvice() != null ? request.getAdvice() : "");
-        attended.setAppointment(request.getAppointment() != null ? request.getAppointment() : "");
+        // Set diagnosis with default value if empty
+        attended.setDiagnosis(request.getDiagnosis() != null && !request.getDiagnosis().trim().isEmpty() 
+            ? request.getDiagnosis() : "Healthy");
+        // Set treatment with default value if empty
+        attended.setTreatment(request.getTreatment() != null && !request.getTreatment().trim().isEmpty() 
+            ? request.getTreatment() : "Not Applicable");
+        // Set appointment with default value if empty
+        attended.setAppointment(request.getAppointment() != null && !request.getAppointment().trim().isEmpty() 
+            ? request.getAppointment() : "Not Applicable");
+        // Set advice with default value if empty
+        attended.setAdvice(request.getAdvice() != null && !request.getAdvice().trim().isEmpty() 
+            ? request.getAdvice() : "No specific Advice");
         attended.setTimestamp(Date.from(ZonedDateTime.now(ZoneId.of("Asia/Kolkata")).toInstant()));
         
         attendedRepository.save(attended);
+    }
+    
+    private String formatAppointmentForMobile(String appointmentDateString) {
+        if (appointmentDateString == null || appointmentDateString.isEmpty() || appointmentDateString.equals("Not Applicable")) {
+            return "Not Applicable";
+        }
+        
+        try {
+            // Parse ISO format datetime string
+            SimpleDateFormat isoFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+            isoFormatter.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+            Date appointmentDate = isoFormatter.parse(appointmentDateString);
+            
+            // Format to dd/mm hh:mm AM/PM
+            SimpleDateFormat mobileFormatter = new SimpleDateFormat("dd/MM hh:mm a");
+            mobileFormatter.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+            return mobileFormatter.format(appointmentDate);
+        } catch (Exception e) {
+            System.out.println("Error formatting appointment date: " + e.getMessage());
+            return appointmentDateString;
+        }
     }
 }

@@ -2,16 +2,19 @@ package online.anshu.docdispatch.controller;
 
 import online.anshu.docdispatch.dto.*;
 import online.anshu.docdispatch.service.HospitalService;
+import online.anshu.docdispatch.entity.Hospital;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/hospital")
+@RequestMapping("/hospital")
 @CrossOrigin(origins = "*")
 public class HospitalController {
     
@@ -40,6 +43,129 @@ public class HospitalController {
         return ResponseEntity.badRequest().body(response);
     }
     
+    @PostMapping("/verify-token")
+    public ResponseEntity<?> verifyToken(@RequestBody Map<String, String> request) {
+        String hospitalId = request.get("hospitalId");
+        String token = request.get("token");
+        
+        Optional<Hospital> hospitalOpt = hospitalService.findByHospitalId(hospitalId);
+        
+        if (hospitalOpt.isEmpty()) {
+            return ResponseEntity.badRequest().body(new HashMap<String, Object>() {{
+                put("success", false);
+                put("message", "Invalid Hospital ID or Token");
+            }});
+        }
+        
+        Hospital hospital = hospitalOpt.get();
+        
+        // Check if token matches
+        if (hospital.getToken() == null || !hospital.getToken().equals(token)) {
+            return ResponseEntity.badRequest().body(new HashMap<String, Object>() {{
+                put("success", false);
+                put("message", "Invalid Hospital ID or Token");
+            }});
+        }
+        
+        return ResponseEntity.ok(new HashMap<String, Object>() {{
+            put("success", true);
+            put("hospital", new HashMap<String, String>() {{
+                put("id", hospital.getHospitalId());
+                put("name", hospital.getName());
+                put("city", hospital.getCity());
+            }});
+        }});
+    }
+    
+    @PostMapping("/confirm-registration")
+    public ResponseEntity<?> confirmRegistration(@RequestBody Map<String, String> request) {
+        String hospitalId = request.get("hospitalId");
+        String token = request.get("token");
+        String password = request.get("password");
+        
+        Optional<Hospital> hospitalOpt = hospitalService.findByHospitalId(hospitalId);
+        
+        if (hospitalOpt.isEmpty()) {
+            return ResponseEntity.badRequest().body(new HashMap<String, Object>() {{
+                put("success", false);
+                put("message", "Hospital not found");
+            }});
+        }
+        
+        Hospital hospital = hospitalOpt.get();
+        
+        // Verify token
+        if (hospital.getToken() == null || !hospital.getToken().equals(token)) {
+            return ResponseEntity.badRequest().body(new HashMap<String, Object>() {{
+                put("success", false);
+                put("message", "Invalid token");
+            }});
+        }
+        
+        // Check if password already set (not empty)
+        if (hospital.getPassword() != null && !hospital.getPassword().isEmpty()) {
+            return ResponseEntity.badRequest().body(new HashMap<String, Object>() {{
+                put("success", false);
+                put("message", "Hospital already registered");
+            }});
+        }
+        
+        // Set password, delete token, and update last login
+        hospital.setPassword(password);
+        hospital.setToken(null);
+        hospital.setLastLogin(new Date());
+        hospitalService.saveHospital(hospital);
+        
+        return ResponseEntity.ok(new HashMap<String, Object>() {{
+            put("success", true);
+            put("message", "Registration confirmed successfully");
+        }});
+    }
+    
+    @PostMapping("/complete-registration")
+    public ResponseEntity<?> completeRegistration(@RequestBody Map<String, String> request) {
+        String hospitalId = request.get("hospitalId");
+        String token = request.get("token");
+        String password = request.get("password");
+        
+        Optional<Hospital> hospitalOpt = hospitalService.findByHospitalId(hospitalId);
+        
+        if (hospitalOpt.isEmpty()) {
+            return ResponseEntity.badRequest().body(new HashMap<String, Object>() {{
+                put("success", false);
+                put("message", "Hospital not found");
+            }});
+        }
+        
+        Hospital hospital = hospitalOpt.get();
+        
+        // Verify token
+        if (hospital.getToken() == null || !hospital.getToken().equals(token)) {
+            return ResponseEntity.badRequest().body(new HashMap<String, Object>() {{
+                put("success", false);
+                put("message", "Invalid token");
+            }});
+        }
+        
+        // Check if password already set (not empty)
+        if (hospital.getPassword() != null && !hospital.getPassword().isEmpty()) {
+            return ResponseEntity.badRequest().body(new HashMap<String, Object>() {{
+                put("success", false);
+                put("message", "Hospital already registered");
+            }});
+        }
+        
+        // Update password and last login
+        hospital.setPassword(password);
+        hospital.setLastLogin(new Date());
+        hospitalService.saveHospital(hospital);
+        
+        return ResponseEntity.ok(new HashMap<String, Object>() {{
+            put("success", true);
+            put("message", "Registration completed successfully");
+        }});
+    }
+    
     @GetMapping("/patients")
     public ResponseEntity<?> getPatients(
             @RequestHeader("Authorization") String authHeader,
@@ -50,11 +176,18 @@ public class HospitalController {
         
         String token = extractToken(authHeader);
         String state = hospitalService.getHospitalStateFromToken(token);
+        String hospitalId = hospitalService.getHospitalIdFromToken(token);
         
-        if (state == null) {
+        if (state == null || hospitalId == null) {
             Map<String, String> error = new HashMap<>();
             error.put("error", "Invalid or expired token");
             return ResponseEntity.status(401).body(error);
+        }
+        
+        Optional<Hospital> hospitalOpt = hospitalService.findByHospitalId(hospitalId);
+        if (hospitalOpt.isPresent() && hospitalOpt.get().isAdmin()) {
+            List<PatientDashboardDto> patients = hospitalService.getAllPatients(search, disease, city, pincode);
+            return ResponseEntity.ok(patients);
         }
         
         List<PatientDashboardDto> patients = hospitalService.getPatientsByState(state, search, disease, city, pincode);

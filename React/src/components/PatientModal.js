@@ -1,35 +1,7 @@
-import React, { useState } from 'react';
-import { patientAPI } from '../services/api';
+import React from 'react';
 import './PatientModal.css';
 
-function PatientModal({ patient, onClose, onRefresh }) {
-  const [isEditing, setIsEditing] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    doctor: '',
-    hospital: '',
-    city: '',
-    diagnosis: '',
-    treatment: '',
-    advice: '',
-    appointment: '',
-  });
-
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleAttend = async () => {
-    setLoading(true);
-    try {
-      await patientAPI.attend(patient.id, formData);
-      onRefresh();
-      onClose();
-    } catch (err) {
-      console.error('Error updating patient:', err);
-    }
-    setLoading(false);
-  };
+function PatientModal({ patient, onClose }) {
 
   const parseSymptoms = (symptoms) => {
     if (!symptoms) return [];
@@ -96,7 +68,7 @@ function PatientModal({ patient, onClose, onRefresh }) {
             </div>
             <div className="detail-item">
               <span className="detail-label">Temperature</span>
-              <span className="detail-value">{patient.temperature}°F</span>
+              <span className="detail-value">{patient.temperature}°C</span>
             </div>
             <div className="detail-item">
               <span className="detail-label">Days Sick</span>
@@ -122,33 +94,6 @@ function PatientModal({ patient, onClose, onRefresh }) {
                   {patient.predictedDisease || 'Not yet predicted'}
                 </span>
               </div>
-              <div className="prediction-probability">
-                <span className="prediction-label">Confidence</span>
-                <div className="probability-display">
-                  <div className="probability-circle">
-                    <svg viewBox="0 0 36 36">
-                      <path
-                        d="M18 2.0845
-                          a 15.9155 15.9155 0 0 1 0 31.831
-                          a 15.9155 15.9155 0 0 1 0 -31.831"
-                        fill="none"
-                        stroke="#e2e8f0"
-                        strokeWidth="3"
-                      />
-                      <path
-                        d="M18 2.0845
-                          a 15.9155 15.9155 0 0 1 0 31.831
-                          a 15.9155 15.9155 0 0 1 0 -31.831"
-                        fill="none"
-                        stroke={patient.probability >= 70 ? '#ef4444' : patient.probability >= 40 ? '#f59e0b' : '#10b981'}
-                        strokeWidth="3"
-                        strokeDasharray={`${patient.probability}, 100`}
-                      />
-                    </svg>
-                    <span>{patient.probability}%</span>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
 
@@ -161,100 +106,6 @@ function PatientModal({ patient, onClose, onRefresh }) {
               ))}
             </div>
           </div>
-
-          {/* Attend Form */}
-          {patient.attended !== 1 && (
-            <div className="attend-section">
-              <div className="attend-header">
-                <h4>Attend Patient</h4>
-                <button 
-                  className="btn btn-sm btn-secondary"
-                  onClick={() => setIsEditing(!isEditing)}
-                >
-                  {isEditing ? 'Cancel' : 'Mark as Attended'}
-                </button>
-              </div>
-              
-              {isEditing && (
-                <div className="attend-form">
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label className="form-label">Doctor Name</label>
-                      <input
-                        type="text"
-                        name="doctor"
-                        value={formData.doctor}
-                        onChange={handleChange}
-                        className="form-input"
-                        placeholder="Enter doctor name"
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label className="form-label">Hospital</label>
-                      <input
-                        type="text"
-                        name="hospital"
-                        value={formData.hospital}
-                        onChange={handleChange}
-                        className="form-input"
-                        placeholder="Enter hospital name"
-                      />
-                    </div>
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label">Diagnosis</label>
-                    <textarea
-                      name="diagnosis"
-                      value={formData.diagnosis}
-                      onChange={handleChange}
-                      className="form-input"
-                      placeholder="Enter diagnosis"
-                      rows="2"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label">Treatment</label>
-                    <textarea
-                      name="treatment"
-                      value={formData.treatment}
-                      onChange={handleChange}
-                      className="form-input"
-                      placeholder="Enter treatment details"
-                      rows="2"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label">Advice</label>
-                    <textarea
-                      name="advice"
-                      value={formData.advice}
-                      onChange={handleChange}
-                      className="form-input"
-                      placeholder="Enter advice for patient"
-                      rows="2"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label">Next Appointment</label>
-                    <input
-                      type="datetime-local"
-                      name="appointment"
-                      value={formData.appointment}
-                      onChange={handleChange}
-                      className="form-input"
-                    />
-                  </div>
-                  <button 
-                    className="btn btn-success"
-                    onClick={handleAttend}
-                    disabled={loading}
-                  >
-                    {loading ? 'Saving...' : 'Save & Mark Attended'}
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
         </div>
       </div>
     </div>

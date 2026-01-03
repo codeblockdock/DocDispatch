@@ -5,6 +5,7 @@ import online.anshu.docdispatch.entity.Hospital;
 import online.anshu.docdispatch.entity.PatientLocation;
 import online.anshu.docdispatch.entity.PredictedDisease;
 import online.anshu.docdispatch.entity.Query;
+import online.anshu.docdispatch.repository.AttendedRepository;
 import online.anshu.docdispatch.repository.HospitalRepository;
 import online.anshu.docdispatch.repository.PatientLocationRepository;
 import online.anshu.docdispatch.repository.PredictedDiseaseRepository;
@@ -25,16 +26,19 @@ public class HospitalService {
     private final PatientLocationRepository patientLocationRepository;
     private final QueryRepository queryRepository;
     private final PredictedDiseaseRepository predictedDiseaseRepository;
+    private final AttendedRepository attendedRepository;
     
     @Autowired
     public HospitalService(HospitalRepository hospitalRepository,
                           PatientLocationRepository patientLocationRepository,
                           QueryRepository queryRepository,
-                          PredictedDiseaseRepository predictedDiseaseRepository) {
+                          PredictedDiseaseRepository predictedDiseaseRepository,
+                          AttendedRepository attendedRepository) {
         this.hospitalRepository = hospitalRepository;
         this.patientLocationRepository = patientLocationRepository;
         this.queryRepository = queryRepository;
         this.predictedDiseaseRepository = predictedDiseaseRepository;
+        this.attendedRepository = attendedRepository;
     }
     
     public HospitalLoginResponse login(HospitalLoginRequest request) {
@@ -50,6 +54,12 @@ public class HospitalService {
         }
         
         Hospital hospital = hospitalOpt.get();
+        
+        // Temporary fix: If hospital ID is "admin" or "adminAtDD", force admin role
+        if ("admin".equalsIgnoreCase(hospital.getHospitalId()) || "adminAtDD".equalsIgnoreCase(hospital.getHospitalId())) {
+            hospital.setAdmin(true);
+            hospitalRepository.save(hospital);
+        }
         
         if (!hospital.isActive()) {
             System.out.println("Login failed: Hospital account is inactive");
@@ -73,6 +83,7 @@ public class HospitalService {
         response.setName(hospital.getName());
         response.setState(hospital.getState());
         response.setCity(hospital.getCity());
+        response.setAdmin(hospital.isAdmin());
         
         System.out.println("Login successful for: " + hospital.getName() + " (State: " + hospital.getState() + ")");
         System.out.println("============================================\n");
@@ -81,40 +92,17 @@ public class HospitalService {
     }
     
     public HospitalLoginResponse register(HospitalRegisterRequest request) {
-        System.out.println("\n========== HOSPITAL REGISTRATION ==========");
+        System.out.println("\n========== HOSPITAL REGISTRATION REQUEST ==========");
         System.out.println("Hospital ID: " + request.getHospitalId());
         System.out.println("Name: " + request.getName());
-        System.out.println("State: " + request.getState());
+        System.out.println("Note: Registration is disabled. Create hospitals manually in MongoDB.");
+        System.out.println("=====================================================\n");
         
-        if (hospitalRepository.existsByHospitalId(request.getHospitalId())) {
-            System.out.println("Registration failed: Hospital ID already exists");
-            return new HospitalLoginResponse(false, "Hospital ID already exists");
-        }
+        // This endpoint is deprecated. Hospital creation should be done manually in MongoDB.
+        // For partner registration requests, use EmailJS from React frontend.
+        // This is here only for backwards compatibility.
         
-        Hospital hospital = new Hospital();
-        hospital.setHospitalId(request.getHospitalId());
-        hospital.setName(request.getName());
-        hospital.setPassword(request.getPassword());
-        hospital.setState(request.getState());
-        hospital.setCity(request.getCity());
-        hospital.setAddress(request.getAddress());
-        hospital.setPhone(request.getPhone());
-        hospital.setEmail(request.getEmail());
-        hospital.setActive(true);
-        
-        hospitalRepository.save(hospital);
-        
-        System.out.println("Hospital registered successfully");
-        System.out.println("==========================================\n");
-        
-        HospitalLoginResponse response = new HospitalLoginResponse();
-        response.setSuccess(true);
-        response.setMessage("Hospital registered successfully");
-        response.setHospitalId(hospital.getHospitalId());
-        response.setName(hospital.getName());
-        response.setState(hospital.getState());
-        
-        return response;
+        return new HospitalLoginResponse(false, "Hospital registration endpoint is disabled. Please contact admin to create hospital manually.");
     }
     
     public String getHospitalStateFromToken(String token) {
@@ -143,6 +131,105 @@ public class HospitalService {
         return null;
     }
     
+    public List<PatientDashboardDto> getAllPatients(String search, String disease, String city, String pincode) {
+        System.out.println("\n========== FETCHING ALL PATIENTS (ADMIN) ==========");
+        System.out.println("Search: " + search + ", Disease: " + disease + ", City: " + city + ", Pincode: " + pincode);
+        
+        // Get all patient locations
+        List<PatientLocation> locations = patientLocationRepository.findAll();
+        System.out.println("Found " + locations.size() + " total patient locations");
+        
+        List<PatientDashboardDto> patients = new ArrayList<>();
+        SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm");
+        formatter.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+        
+        for (PatientLocation location : locations) {
+            // Apply city filter
+            if (city != null && !city.isEmpty() && !location.getCity().toLowerCase().contains(city.toLowerCase())) {
+                continue;
+            }
+            
+            // Apply pincode filter
+            if (pincode != null && !pincode.isEmpty() && !location.getPincode().contains(pincode)) {
+                continue;
+            }
+            
+            // Get the query for this location
+            Optional<Query> queryOpt = queryRepository.findById(location.getQueryId());
+            if (queryOpt.isEmpty()) continue;
+            
+            Query query = queryOpt.get();
+            
+            // Apply name search filter
+            if (search != null && !search.isEmpty() && 
+                !query.getName().toLowerCase().contains(search.toLowerCase())) {
+                continue;
+            }
+            
+            // Get predicted disease if available
+            Optional<PredictedDisease> predictionOpt = predictedDiseaseRepository.findByQueryId(query.getId());
+            String predictedDisease = "";
+            int probability = 0;
+            
+            if (predictionOpt.isPresent()) {
+                predictedDisease = predictionOpt.get().getDisease();
+                probability = (int) (predictionOpt.get().getProbability() * 100);
+            }
+            
+            // Apply disease filter
+            if (disease != null && !disease.isEmpty() && 
+                !predictedDisease.toLowerCase().contains(disease.toLowerCase())) {
+                continue;
+            }
+            
+            PatientDashboardDto dto = new PatientDashboardDto();
+            dto.setId(query.getId());
+            dto.setName(query.getName());
+            dto.setSymptoms(query.getSymptoms());
+            dto.setPredictedDisease(predictedDisease);
+            dto.setProbability(probability);
+            dto.setCity(location.getCity());
+            dto.setState(location.getState());
+            dto.setPincode(location.getPincode());
+            dto.setContact(query.getContact());
+            dto.setAge(query.getAge());
+            dto.setGender(query.getGender());
+            dto.setTemperature(query.getTemperature());
+            dto.setDays(query.getDays());
+            dto.setContagious(query.getContagious());
+            dto.setAttended(query.getAttended());
+            
+            // Set status based on attended flag and probability
+            if (query.getAttended() == 1) {
+                dto.setStatus("Attended");
+            } else if (probability >= 70) {
+                dto.setStatus("High Risk");
+            } else if (probability >= 40) {
+                dto.setStatus("Medium Risk");
+            } else {
+                dto.setStatus("Pending");
+            }
+            
+            if (query.getReceivedAt() != null) {
+                dto.setReceivedAt(formatter.format(query.getReceivedAt()));
+            }
+            
+            patients.add(dto);
+        }
+        
+        // Sort by receivedAt descending (newest first)
+        patients.sort((a, b) -> {
+            if (a.getReceivedAt() == null) return 1;
+            if (b.getReceivedAt() == null) return -1;
+            return b.getReceivedAt().compareTo(a.getReceivedAt());
+        });
+        
+        System.out.println("Returning " + patients.size() + " patients after filtering");
+        System.out.println("================================================\n");
+        
+        return patients;
+    }
+
     public List<PatientDashboardDto> getPatientsByState(String state, String search, String disease, String city, String pincode) {
         System.out.println("\n========== FETCHING PATIENTS BY STATE ==========");
         System.out.println("State: " + state);
@@ -344,8 +431,22 @@ public class HospitalService {
             dto.setProbability((int) (predictionOpt.get().getProbability() * 100));
         }
         
+        // Fetch attended details if patient has been attended
         if (query.getAttended() == 1) {
             dto.setStatus("Attended");
+            attendedRepository.findByQueryId(query.getId()).ifPresent(attended -> {
+                dto.setDoctor(attended.getDoctor());
+                dto.setHospital(attended.getHospital());
+                dto.setCity(attended.getCity());
+                dto.setDiagnosis(attended.getDiagnosis());
+                dto.setTreatment(attended.getTreatment());
+                dto.setAdvice(attended.getAdvice());
+                dto.setAppointment(attended.getAppointment());
+                // Set attended timestamp from attended collection
+                if (attended.getTimestamp() != null) {
+                    dto.setAttendedTimestamp(formatter.format(attended.getTimestamp()));
+                }
+            });
         } else if (dto.getProbability() >= 70) {
             dto.setStatus("High Risk");
         } else if (dto.getProbability() >= 40) {
@@ -379,5 +480,13 @@ public class HospitalService {
         
         System.out.println("Patient " + id + " deleted successfully");
         return true;
+    }
+    
+    public Optional<Hospital> findByHospitalId(String hospitalId) {
+        return hospitalRepository.findByHospitalId(hospitalId);
+    }
+    
+    public void saveHospital(Hospital hospital) {
+        hospitalRepository.save(hospital);
     }
 }

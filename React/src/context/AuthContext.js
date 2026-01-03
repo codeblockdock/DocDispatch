@@ -36,9 +36,14 @@ export const AuthProvider = ({ children }) => {
       
       if (response.data.success) {
         const { token, ...userData } = response.data;
+        // Store admin status from the response
+        const userDataWithAdmin = {
+          ...userData,
+          isAdmin: userData.admin || false,
+        };
         localStorage.setItem('hospitalToken', token);
-        localStorage.setItem('hospitalData', JSON.stringify(userData));
-        setUser(userData);
+        localStorage.setItem('hospitalData', JSON.stringify(userDataWithAdmin));
+        setUser(userDataWithAdmin);
         return { success: true };
       } else {
         setError(response.data.message || 'Login failed');

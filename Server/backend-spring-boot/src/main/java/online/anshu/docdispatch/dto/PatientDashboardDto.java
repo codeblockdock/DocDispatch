@@ -18,6 +18,13 @@ public class PatientDashboardDto {
     private String contagious;
     private String receivedAt;
     private int attended;
+    private String doctor;
+    private String hospital;
+    private String diagnosis;
+    private String treatment;
+    private String advice;
+    private String appointment;
+    private String attendedTimestamp;
     
     // Getters and Setters
     public String getId() { return id; }
@@ -70,4 +77,25 @@ public class PatientDashboardDto {
     
     public int getAttended() { return attended; }
     public void setAttended(int attended) { this.attended = attended; }
+    
+    public String getDoctor() { return doctor; }
+    public void setDoctor(String doctor) { this.doctor = doctor; }
+    
+    public String getHospital() { return hospital; }
+    public void setHospital(String hospital) { this.hospital = hospital; }
+    
+    public String getDiagnosis() { return diagnosis; }
+    public void setDiagnosis(String diagnosis) { this.diagnosis = diagnosis; }
+    
+    public String getTreatment() { return treatment; }
+    public void setTreatment(String treatment) { this.treatment = treatment; }
+    
+    public String getAdvice() { return advice; }
+    public void setAdvice(String advice) { this.advice = advice; }
+    
+    public String getAppointment() { return appointment; }
+    public void setAppointment(String appointment) { this.appointment = appointment; }
+    
+    public String getAttendedTimestamp() { return attendedTimestamp; }
+    public void setAttendedTimestamp(String attendedTimestamp) { this.attendedTimestamp = attendedTimestamp; }
 }

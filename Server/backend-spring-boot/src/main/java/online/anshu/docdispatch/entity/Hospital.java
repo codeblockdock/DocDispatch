@@ -4,8 +4,6 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.index.Indexed;
 import java.util.Date;
-import java.time.ZonedDateTime;
-import java.time.ZoneId;
 
 @Document(collection = "hospitals")
 public class Hospital {
@@ -32,12 +30,13 @@ public class Hospital {
     
     private boolean active = true;
     
-    private Date createdAt;
+    private boolean admin = false;
     
     private Date lastLogin;
+    
+    private String token;
 
     public Hospital() {
-        this.createdAt = Date.from(ZonedDateTime.now(ZoneId.of("Asia/Kolkata")).toInstant());
     }
     
     // Getters and Setters
@@ -71,9 +70,12 @@ public class Hospital {
     public boolean isActive() { return active; }
     public void setActive(boolean active) { this.active = active; }
     
-    public Date getCreatedAt() { return createdAt; }
-    public void setCreatedAt(Date createdAt) { this.createdAt = createdAt; }
+    public boolean isAdmin() { return admin; }
+    public void setAdmin(boolean admin) { this.admin = admin; }
     
     public Date getLastLogin() { return lastLogin; }
     public void setLastLogin(Date lastLogin) { this.lastLogin = lastLogin; }
+    
+    public String getToken() { return token; }
+    public void setToken(String token) { this.token = token; }
 }

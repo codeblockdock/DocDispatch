@@ -32,11 +32,11 @@ function Header() {
         <div className="header-right">
           <div className="header-user">
             <div className="header-user-info">
-              <span className="header-user-name">{user?.name || 'Hospital'}</span>
+              <span className="header-user-name">{user?.isAdmin ? 'admin' : (user?.name || 'Hospital')}</span>
               <span className="header-user-state">{user?.state}</span>
             </div>
             <div className="header-user-avatar">
-              {(user?.name || 'H').charAt(0).toUpperCase()}
+              {(user?.isAdmin ? 'a' : (user?.name || 'H')).charAt(0).toUpperCase()}
             </div>
           </div>
           <button className="btn btn-secondary header-logout" onClick={handleLogout}>
