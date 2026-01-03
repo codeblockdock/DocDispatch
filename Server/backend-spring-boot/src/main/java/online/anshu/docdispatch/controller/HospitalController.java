@@ -201,14 +201,23 @@ public class HospitalController {
         
         String token = extractToken(authHeader);
         String state = hospitalService.getHospitalStateFromToken(token);
+        String hospitalId = hospitalService.getHospitalIdFromToken(token);
         
-        if (state == null) {
+        if (state == null || hospitalId == null) {
             Map<String, String> error = new HashMap<>();
             error.put("error", "Invalid or expired token");
             return ResponseEntity.status(401).body(error);
         }
         
-        PatientDashboardDto patient = hospitalService.getPatientById(id, state);
+        // Check if admin - admins can access all patients
+        Optional<Hospital> hospitalOpt = hospitalService.findByHospitalId(hospitalId);
+        PatientDashboardDto patient;
+        if (hospitalOpt.isPresent() && hospitalOpt.get().isAdmin()) {
+            patient = hospitalService.getPatientByIdForAdmin(id);
+        } else {
+            patient = hospitalService.getPatientById(id, state);
+        }
+        
         if (patient == null) {
             Map<String, String> error = new HashMap<>();
             error.put("error", "Patient not found or access denied");
@@ -225,14 +234,23 @@ public class HospitalController {
         
         String token = extractToken(authHeader);
         String state = hospitalService.getHospitalStateFromToken(token);
+        String hospitalId = hospitalService.getHospitalIdFromToken(token);
         
-        if (state == null) {
+        if (state == null || hospitalId == null) {
             Map<String, String> error = new HashMap<>();
             error.put("error", "Invalid or expired token");
             return ResponseEntity.status(401).body(error);
         }
         
-        boolean deleted = hospitalService.deletePatient(id, state);
+        // Check if admin - admins can delete any patient
+        Optional<Hospital> hospitalOpt = hospitalService.findByHospitalId(hospitalId);
+        boolean deleted;
+        if (hospitalOpt.isPresent() && hospitalOpt.get().isAdmin()) {
+            deleted = hospitalService.deletePatientForAdmin(id);
+        } else {
+            deleted = hospitalService.deletePatient(id, state);
+        }
+        
         if (deleted) {
             Map<String, String> response = new HashMap<>();
             response.put("message", "Patient deleted successfully");
@@ -248,14 +266,23 @@ public class HospitalController {
     public ResponseEntity<?> getStats(@RequestHeader("Authorization") String authHeader) {
         String token = extractToken(authHeader);
         String state = hospitalService.getHospitalStateFromToken(token);
+        String hospitalId = hospitalService.getHospitalIdFromToken(token);
         
-        if (state == null) {
+        if (state == null || hospitalId == null) {
             Map<String, String> error = new HashMap<>();
             error.put("error", "Invalid or expired token");
             return ResponseEntity.status(401).body(error);
         }
         
-        DashboardStatsDto stats = hospitalService.getStatsByState(state);
+        // Check if admin - admins see stats for all patients
+        Optional<Hospital> hospitalOpt = hospitalService.findByHospitalId(hospitalId);
+        DashboardStatsDto stats;
+        if (hospitalOpt.isPresent() && hospitalOpt.get().isAdmin()) {
+            stats = hospitalService.getAllStats();
+        } else {
+            stats = hospitalService.getStatsByState(state);
+        }
+        
         return ResponseEntity.ok(stats);
     }
     

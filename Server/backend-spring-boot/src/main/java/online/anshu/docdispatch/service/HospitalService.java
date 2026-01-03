@@ -336,6 +336,18 @@ public class HospitalService {
         
         List<PatientLocation> locations = patientLocationRepository.findByState(state);
         
+        return calculateStats(locations, "State: " + state);
+    }
+    
+    public DashboardStatsDto getAllStats() {
+        System.out.println("\n========== FETCHING ALL STATS (ADMIN) ==========");
+        
+        List<PatientLocation> locations = patientLocationRepository.findAll();
+        
+        return calculateStats(locations, "All States (Admin)");
+    }
+    
+    private DashboardStatsDto calculateStats(List<PatientLocation> locations, String context) {
         DashboardStatsDto stats = new DashboardStatsDto();
         long totalPatients = 0;
         long highRiskCases = 0;
@@ -384,9 +396,9 @@ public class HospitalService {
         stats.setAttendedCases(attendedCases);
         stats.setPendingCases(pendingCases);
         
-        System.out.println("Stats - Total: " + totalPatients + ", High Risk: " + highRiskCases + 
+        System.out.println("Stats for " + context + " - Total: " + totalPatients + ", High Risk: " + highRiskCases + 
                           ", New: " + newlyReported + ", Emergency: " + emergencyPriority);
-        System.out.println("===========================================\n");
+        System.out.println("===========================================");
         
         return stats;
     }
@@ -462,6 +474,73 @@ public class HospitalService {
         return dto;
     }
     
+    public PatientDashboardDto getPatientByIdForAdmin(String id) {
+        Optional<Query> queryOpt = queryRepository.findById(id);
+        if (queryOpt.isEmpty()) return null;
+        
+        Query query = queryOpt.get();
+        
+        // Get patient location (no state restriction for admin)
+        Optional<PatientLocation> locationOpt = patientLocationRepository.findByQueryId(id);
+        if (locationOpt.isEmpty()) return null;
+        
+        PatientLocation location = locationOpt.get();
+        
+        SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm");
+        formatter.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+        
+        PatientDashboardDto dto = new PatientDashboardDto();
+        dto.setId(query.getId());
+        dto.setName(query.getName());
+        dto.setSymptoms(query.getSymptoms());
+        dto.setCity(location.getCity());
+        dto.setState(location.getState());
+        dto.setPincode(location.getPincode());
+        dto.setContact(query.getContact());
+        dto.setAge(query.getAge());
+        dto.setGender(query.getGender());
+        dto.setTemperature(query.getTemperature());
+        dto.setDays(query.getDays());
+        dto.setContagious(query.getContagious());
+        dto.setAttended(query.getAttended());
+        
+        Optional<PredictedDisease> predictionOpt = predictedDiseaseRepository.findByQueryId(query.getId());
+        if (predictionOpt.isPresent()) {
+            dto.setPredictedDisease(predictionOpt.get().getDisease());
+            dto.setProbability((int) (predictionOpt.get().getProbability() * 100));
+        }
+        
+        // Fetch attended details if patient has been attended
+        if (query.getAttended() == 1) {
+            dto.setStatus("Attended");
+            attendedRepository.findByQueryId(query.getId()).ifPresent(attended -> {
+                dto.setDoctor(attended.getDoctor());
+                dto.setHospital(attended.getHospital());
+                dto.setCity(attended.getCity());
+                dto.setDiagnosis(attended.getDiagnosis());
+                dto.setTreatment(attended.getTreatment());
+                dto.setAdvice(attended.getAdvice());
+                dto.setAppointment(attended.getAppointment());
+                // Set attended timestamp from attended collection
+                if (attended.getTimestamp() != null) {
+                    dto.setAttendedTimestamp(formatter.format(attended.getTimestamp()));
+                }
+            });
+        } else if (dto.getProbability() >= 70) {
+            dto.setStatus("High Risk");
+        } else if (dto.getProbability() >= 40) {
+            dto.setStatus("Medium Risk");
+        } else {
+            dto.setStatus("Pending");
+        }
+        
+        if (query.getReceivedAt() != null) {
+            dto.setReceivedAt(formatter.format(query.getReceivedAt()));
+        }
+        
+        return dto;
+    }
+    
     public boolean deletePatient(String id, String state) {
         // Verify the patient belongs to the hospital's state
         Optional<PatientLocation> locationOpt = patientLocationRepository.findByQueryId(id);
@@ -476,9 +555,25 @@ public class HospitalService {
         // Delete related records
         patientLocationRepository.deleteById(id);
         predictedDiseaseRepository.deleteById(id);
+        attendedRepository.deleteById(id);
         queryRepository.deleteById(id);
         
         System.out.println("Patient " + id + " deleted successfully");
+        return true;
+    }
+    
+    public boolean deletePatientForAdmin(String id) {
+        // Admin can delete any patient (no state check)
+        Optional<PatientLocation> locationOpt = patientLocationRepository.findByQueryId(id);
+        if (locationOpt.isEmpty()) return false;
+        
+        // Delete related records
+        patientLocationRepository.deleteById(id);
+        predictedDiseaseRepository.deleteById(id);
+        attendedRepository.deleteById(id);
+        queryRepository.deleteById(id);
+        
+        System.out.println("Patient " + id + " deleted successfully by admin");
         return true;
     }
     
