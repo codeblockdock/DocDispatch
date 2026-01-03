@@ -21,14 +21,43 @@ mixin PatientFormLogic<T extends StatefulWidget> on State<T> {
   AutovalidateMode autoValidate = AutovalidateMode.disabled;
 
   final List<String> commonSymptoms = [
-    "Fever", "Cough", "Cold", "Headache", "Sore Throat", "Fatigue"
+    "Fever", "Cough", "Cold", "Headache", "Sore Throat", "Fatigue", "Loss of Appetite"
   ];
 
   final List<String> suggestionDatabase = [
-    "Fever", "Cough", "Cold", "Headache", "Sore Throat", "Fatigue",
-    "Nausea", "Vomiting", "Diarrhea", "Body Ache", "Chills",
-    "Shortness of Breath", "Loss of Taste", "Loss of Smell",
-    "Rash", "Dizziness", "Sneezing", "Runny Nose"
+    "Abdominal Pain", "Abnormal Menstruation", "Acidity", "Acute Liver Failure",
+    "Altered Sensorium", "Anxiety", "Back Pain", "Belly Pain", "Blackheads",
+    "Bladder Discomfort", "Blister", "Blood In Sputum", "Bloody Stool",
+    "Blurred And Distorted Vision", "Breathlessness", "Brittle Nails", "Bruising",
+    "Burning Micturition", "Chest Pain", "Chills", "Cold Hands And Feet",
+    "Coma", "Congestion", "Constipation", "Continuous Feel Of Urine",
+    "Continuous Sneezing", "Cough", "Cramps", "Dark Urine", "Dehydration",
+    "Depression", "Diarrhoea", "Discoloured Patches", "Distention Of Abdomen",
+    "Dizziness", "Drying And Tingling Lips", "Enlarged Thyroid",
+    "Excessive Hunger", "Extra Marital Contacts", "Family History",
+    "Fast Heart Rate", "Fatigue", "Fluid Overload", "Foul Smell Of Urine",
+    "Headache", "High Fever", "Hip Joint Pain", "History Of Alcohol Consumption",
+    "Increased Appetite", "Indigestion", "Inflammatory Nails", "Internal Itching",
+    "Irregular Sugar Level", "Irritability", "Irritation", "Itching", "Joint Pain",
+    "Knee Pain", "Lack Of Concentration", "Lethargy", "Loss Of Appetite",
+    "Loss Of Balance", "Loss Of Smell", "Malaise", "Mild Fever", "Mood Swings",
+    "Movement Stiffness", "Mucoid Sputum", "Muscle Pain", "Muscle Wasting",
+    "Muscle Weakness", "Nausea", "Neck Pain", "Nodal Skin Eruptions",
+    "Obesity", "Pain Behind The Eyes", "Pain During Bowel Movements",
+    "Painful Walking", "Palpitations", "Passage Of Gases", "Patches In Throat",
+    "Phlegm", "Polyuria", "Prominent Veins On Calf", "Puffy Face And Eyes",
+    "Pus Filled Pimples", "Receiving Blood Transfusion",
+    "Receiving Unsterile Injections", "Red Sore Around Nose", "Red Spots Over Body",
+    "Redness Of Eyes", "Restlessness", "Runny Nose", "Rusty Sputum",
+    "Shivering", "Silver Like Dusting", "Sinus Pressure", "Skin Peeling",
+    "Skin Rash", "Slurred Speech", "Small Dents In Nails", "Spinning Movements",
+    "Spotting Urination", "Stiff Neck", "Stomach Bleeding", "Stomach Pain",
+    "Sunken Eyes", "Sweating", "Swelled Lymph Nodes", "Swelling Joints",
+    "Swelling Of Stomach", "Swollen Blood Vessels", "Swollen Extremities",
+    "Swollen Legs", "Throat Irritation", "Toxic Look (Typhus)", "Ulcers On Tongue",
+    "Unsteadiness", "Visual Disturbances", "Vomiting", "Watering From Eyes",
+    "Weakness In Limbs", "Weakness Of One Body Side", "Weight Gain", "Weight Loss",
+    "Yellow Crust Ooze", "Yellow Urine", "Yellowing Of Eyes", "Yellowish Skin"
   ];
 
   final List<String> indianStates = [
@@ -101,7 +130,7 @@ mixin PatientFormLogic<T extends StatefulWidget> on State<T> {
             optionsBuilder: (TextEditingValue val) {
               if (val.text == '') return const Iterable<String>.empty();
               return suggestionDatabase.where((option) =>
-                  option.toLowerCase().contains(val.text.toLowerCase()));
+                  option.toLowerCase().startsWith(val.text.toLowerCase()));
             },
             onSelected: (String selection) {
               if (!selectedSymptoms.contains(selection)) toggleSymptom(selection);
