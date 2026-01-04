@@ -362,6 +362,139 @@ public class HospitalService {
         
         return patients;
     }
+
+    public List<PatientDashboardDto> getPatientsByRegion(List<String> regionPincodes, String search, String disease, String city, String pincode, String riskFactor) {
+        System.out.println("\n========== FETCHING PATIENTS BY REGION ==========");
+        System.out.println("Region Pincodes: " + regionPincodes);
+        System.out.println("Search: " + search + ", Disease: " + disease + ", City: " + city + ", Pincode: " + pincode + ", RiskFactor: " + riskFactor);
+        
+        if (regionPincodes == null || regionPincodes.isEmpty()) {
+            System.out.println("No region pincodes assigned, returning empty list");
+            return new ArrayList<>();
+        }
+
+        // Clean up region pincodes
+        List<String> cleanedPincodes = cleanRegionPincodes(regionPincodes);
+        System.out.println("Cleaned Pincodes: " + cleanedPincodes);
+
+        // Get all patient locations
+        List<PatientLocation> allLocations = patientLocationRepository.findAll();
+        
+        // Filter by region pincodes
+        List<PatientLocation> locations = new ArrayList<>();
+        for (PatientLocation loc : allLocations) {
+            if (loc.getPincode() != null && cleanedPincodes.contains(loc.getPincode().trim())) {
+                locations.add(loc);
+            }
+        }
+        System.out.println("Found " + locations.size() + " patient locations in assigned regions");
+        
+        List<PatientDashboardDto> patients = new ArrayList<>();
+        SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm");
+        formatter.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+        
+        for (PatientLocation location : locations) {
+            // Apply city filter
+            if (city != null && !city.isEmpty() && !location.getCity().toLowerCase().contains(city.toLowerCase())) {
+                continue;
+            }
+            
+            // Apply pincode filter (additional filter on top of region)
+            if (pincode != null && !pincode.isEmpty() && !location.getPincode().contains(pincode)) {
+                continue;
+            }
+            
+            // Get the query for this location
+            Optional<Query> queryOpt = queryRepository.findById(location.getQueryId());
+            if (queryOpt.isEmpty()) continue;
+            
+            Query query = queryOpt.get();
+            
+            // Apply name search filter
+            if (search != null && !search.isEmpty() && 
+                !query.getName().toLowerCase().contains(search.toLowerCase())) {
+                continue;
+            }
+            
+            // Get predicted disease if available
+            Optional<PredictedDisease> predictionOpt = predictedDiseaseRepository.findByQueryId(query.getId());
+            String predictedDisease = "";
+            int probability = 0;
+            
+            if (predictionOpt.isPresent()) {
+                predictedDisease = predictionOpt.get().getDisease();
+                probability = (int) (predictionOpt.get().getProbability() * 100);
+            }
+            
+            // Apply disease filter
+            if (disease != null && !disease.isEmpty() && 
+                !predictedDisease.toLowerCase().contains(disease.toLowerCase())) {
+                continue;
+            }
+
+            // Apply risk factor filter
+            if (riskFactor != null && !riskFactor.isEmpty()) {
+                boolean matches = false;
+                if (riskFactor.equalsIgnoreCase("low") && query.getRiskfactor() == 1.0) matches = true;
+                else if (riskFactor.equalsIgnoreCase("medium") && query.getRiskfactor() == 1.5) matches = true;
+                else if (riskFactor.equalsIgnoreCase("high") && query.getRiskfactor() == 3.0) matches = true;
+                else if (riskFactor.equalsIgnoreCase("priority")) {
+                    if ((query.getAge() >= 5 && query.getAge() <= 12) || (query.getAge() >= 51 && query.getAge() <= 60)) {
+                        matches = true;
+                    }
+                }
+                
+                if (!matches) continue;
+            }
+            
+            PatientDashboardDto dto = new PatientDashboardDto();
+            dto.setId(query.getId());
+            dto.setName(query.getName());
+            dto.setSymptoms(query.getSymptoms());
+            dto.setPredictedDisease(predictedDisease);
+            dto.setProbability(probability);
+            dto.setCity(location.getCity());
+            dto.setVillage(location.getVillage());
+            dto.setState(location.getState());
+            dto.setPincode(location.getPincode());
+            dto.setContact(query.getContact());
+            dto.setAge(query.getAge());
+            dto.setGender(query.getGender());
+            dto.setTemperature(query.getTemperature());
+            dto.setDays(query.getDays());
+            dto.setRiskfactor(query.getRiskfactor());
+            dto.setAttended(query.getAttended());
+            
+            // Set status based on attended flag and riskfactor/probability
+            if (query.getAttended() == 1) {
+                dto.setStatus("Attended");
+            } else if (query.getRiskfactor() == 3.0 || probability >= 70) {
+                dto.setStatus("High Risk");
+            } else if (query.getRiskfactor() == 1.5 || probability >= 40) {
+                dto.setStatus("Medium Risk");
+            } else {
+                dto.setStatus("Pending");
+            }
+            
+            if (query.getReceivedAt() != null) {
+                dto.setReceivedAt(formatter.format(query.getReceivedAt()));
+            }
+            
+            patients.add(dto);
+        }
+        
+        // Sort by receivedAt descending (newest first)
+        patients.sort((a, b) -> {
+            if (a.getReceivedAt() == null) return 1;
+            if (b.getReceivedAt() == null) return -1;
+            return b.getReceivedAt().compareTo(a.getReceivedAt());
+        });
+        
+        System.out.println("Returning " + patients.size() + " patients after filtering");
+        System.out.println("================================================\n");
+        
+        return patients;
+    }
     
     public DashboardStatsDto getStatsByState(String state) {
         System.out.println("\n========== FETCHING STATS BY STATE ==========");
@@ -378,6 +511,34 @@ public class HospitalService {
         List<PatientLocation> locations = patientLocationRepository.findAll();
         
         return calculateStats(locations, "All States (Admin)");
+    }
+
+    public DashboardStatsDto getStatsByRegion(List<String> regionPincodes) {
+        System.out.println("\n========== FETCHING STATS BY REGION ==========");
+        System.out.println("Region Pincodes: " + regionPincodes);
+        
+        if (regionPincodes == null || regionPincodes.isEmpty()) {
+            System.out.println("No region pincodes assigned, returning empty stats");
+            return new DashboardStatsDto();
+        }
+
+        // Clean up region pincodes
+        List<String> cleanedPincodes = cleanRegionPincodes(regionPincodes);
+        System.out.println("Cleaned Pincodes: " + cleanedPincodes);
+
+        // Get all patient locations
+        List<PatientLocation> allLocations = patientLocationRepository.findAll();
+        
+        // Filter by region pincodes
+        List<PatientLocation> locations = new ArrayList<>();
+        for (PatientLocation loc : allLocations) {
+            if (loc.getPincode() != null && cleanedPincodes.contains(loc.getPincode().trim())) {
+                locations.add(loc);
+            }
+        }
+        System.out.println("Found " + locations.size() + " patient locations in assigned regions");
+        
+        return calculateStats(locations, "Region: " + cleanedPincodes);
     }
     
     private DashboardStatsDto calculateStats(List<PatientLocation> locations, String context) {
@@ -535,6 +696,39 @@ public class HospitalService {
         }
         
         return dto;
+    }
+
+    /**
+     * Helper method to clean region pincodes from various formats.
+     * Handles cases like:
+     * - ["[462001", "462002", "462005]"] (brackets as part of strings)
+     * - "[462001, 462002, 462003]" (single string with all pincodes)
+     * - ["462001", "462002"] (clean array)
+     */
+    private List<String> cleanRegionPincodes(List<String> regionPincodes) {
+        List<String> cleanedPincodes = new ArrayList<>();
+        
+        for (String p : regionPincodes) {
+            if (p == null) continue;
+            
+            // Remove brackets and split by comma if it contains multiple pincodes
+            String cleaned = p.replaceAll("[\\[\\]]", "").trim();
+            
+            // If it contains comma, it might be a comma-separated list
+            if (cleaned.contains(",")) {
+                String[] parts = cleaned.split(",");
+                for (String part : parts) {
+                    String trimmed = part.trim();
+                    if (!trimmed.isEmpty()) {
+                        cleanedPincodes.add(trimmed);
+                    }
+                }
+            } else if (!cleaned.isEmpty()) {
+                cleanedPincodes.add(cleaned);
+            }
+        }
+        
+        return cleanedPincodes;
     }
     
     public PatientDashboardDto getPatientByIdForAdmin(String id) {

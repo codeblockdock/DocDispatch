@@ -55,7 +55,9 @@ function AttendModal({ patient, onClose, onRefresh }) {
     diagnosis: '',
     treatment: '',
     appointmentDate: '',
-    appointmentTime: '',
+    appointmentHour: '09',
+    appointmentMinute: '00',
+    appointmentPeriod: 'AM',
     advice: '',
   });
 
@@ -87,12 +89,19 @@ function AttendModal({ patient, onClose, onRefresh }) {
     setHospitalData(prev => ({ ...prev, [name]: value }));
   };
 
-  const formatDateTimeToISO = (dateStr, timeStr) => {
-    if (!dateStr || !timeStr) return '';
+  const formatDateTimeToISO = (dateStr, hour, minute, period) => {
+    if (!dateStr || !hour || !minute || !period) return '';
     
-    // dateStr is in YYYY-MM-DD format from date input
-    // timeStr is in HH:MM format from time input
-    return `${dateStr}T${timeStr}:00`;
+    // Convert 12-hour to 24-hour format
+    let hour24 = parseInt(hour, 10);
+    if (period === 'PM' && hour24 !== 12) {
+      hour24 += 12;
+    } else if (period === 'AM' && hour24 === 12) {
+      hour24 = 0;
+    }
+    
+    const hourStr = hour24.toString().padStart(2, '0');
+    return `${dateStr}T${hourStr}:${minute}:00`;
   };
 
   // Get minimum date (today) for the date picker
@@ -123,8 +132,8 @@ function AttendModal({ patient, onClose, onRefresh }) {
     setError('');
     
     try {
-      const appointmentValue = formData.appointmentDate && formData.appointmentTime 
-        ? formatDateTimeToISO(formData.appointmentDate, formData.appointmentTime)
+      const appointmentValue = formData.appointmentDate && formData.appointmentHour 
+        ? formatDateTimeToISO(formData.appointmentDate, formData.appointmentHour, formData.appointmentMinute, formData.appointmentPeriod)
         : '';
 
       const attendData = {
@@ -328,13 +337,38 @@ function AttendModal({ patient, onClose, onRefresh }) {
                     </svg>
                     Appointment Time
                   </label>
-                  <input
-                    type="time"
-                    name="appointmentTime"
-                    value={formData.appointmentTime}
-                    onChange={handleChange}
-                    className="form-input time-input"
-                  />
+                  <div className="time-picker-group">
+                    <select
+                      name="appointmentHour"
+                      value={formData.appointmentHour}
+                      onChange={handleChange}
+                      className="form-input time-select"
+                    >
+                      {['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'].map(h => (
+                        <option key={h} value={h}>{h}</option>
+                      ))}
+                    </select>
+                    <span className="time-separator">:</span>
+                    <select
+                      name="appointmentMinute"
+                      value={formData.appointmentMinute}
+                      onChange={handleChange}
+                      className="form-input time-select"
+                    >
+                      {['00', '15', '30', '45'].map(m => (
+                        <option key={m} value={m}>{m}</option>
+                      ))}
+                    </select>
+                    <select
+                      name="appointmentPeriod"
+                      value={formData.appointmentPeriod}
+                      onChange={handleChange}
+                      className="form-input time-select period-select"
+                    >
+                      <option value="AM">AM</option>
+                      <option value="PM">PM</option>
+                    </select>
+                  </div>
                 </div>
               </div>
             </div>

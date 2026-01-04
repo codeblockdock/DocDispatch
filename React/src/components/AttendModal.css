@@ -307,3 +307,47 @@ textarea.form-input {
 .modal-close:hover {
   color: #1f2937;
 }
+/* Time Picker Group Styles */
+.time-picker-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.time-select {
+  width: auto;
+  min-width: 70px;
+  padding: 0.75rem 0.5rem;
+  text-align: center;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.5rem center;
+  background-size: 14px;
+  padding-right: 2rem;
+  cursor: pointer;
+}
+
+.time-select.period-select {
+  min-width: 80px;
+  background-color: #f0fdf4;
+  border-color: #86efac;
+  color: #166534;
+  font-weight: 500;
+}
+
+.time-separator {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+@media (max-width: 640px) {
+  .time-picker-group {
+    flex-wrap: wrap;
+  }
+  
+  .time-select {
+    min-width: 60px;
+  }
+}

@@ -100,42 +100,33 @@ function Dashboard() {
     setShowReceiptModal(true);
   };
 
-  const handleDispatch = async (group) => {
+  const handleDispatch = async (group, doctorDetails) => {
     try {
-      // Get hospital data from localStorage
-      const storedData = localStorage.getItem('hospitalData');
-      let hospitalData = {
-        doctorName: 'Dispatched Doctor',
-        hospitalName: 'Dispatch Center',
-        city: group.city,
-        state: group.state,
-      };
-      
-      if (storedData) {
-        try {
-          const data = JSON.parse(storedData);
-          hospitalData = {
-            doctorName: data.doctorName || 'Dispatched Doctor',
-            hospitalName: data.name || data.hospitalName || 'Dispatch Center',
-            city: data.city || group.city,
-            state: data.state || group.state,
-          };
-        } catch (e) {
-          console.error('Error parsing hospital data:', e);
+      // Format appointment date and time
+      let appointmentValue = 'Doctor En Route';
+      if (doctorDetails.appointmentDate && doctorDetails.appointmentHour) {
+        // Convert 12-hour to 24-hour format
+        let hour24 = parseInt(doctorDetails.appointmentHour, 10);
+        if (doctorDetails.appointmentPeriod === 'PM' && hour24 !== 12) {
+          hour24 += 12;
+        } else if (doctorDetails.appointmentPeriod === 'AM' && hour24 === 12) {
+          hour24 = 0;
         }
+        const hourStr = hour24.toString().padStart(2, '0');
+        appointmentValue = `${doctorDetails.appointmentDate}T${hourStr}:${doctorDetails.appointmentMinute}:00`;
       }
-
-      // Prepare mass attend data
+      
+      // Prepare mass attend data with provided doctor details
       const massAttendData = {
         queryIds: group.patients.map(p => p.id),
-        doctor: hospitalData.doctorName,
-        hospital: hospitalData.hospitalName,
-        city: hospitalData.city,
-        state: hospitalData.state,
-        diagnosis: 'Field Assessment Required',
-        treatment: 'Doctor Dispatched - In-person examination scheduled',
-        appointment: 'Doctor En Route',
-        advice: 'Doctor has been dispatched to your location. Please be available for examination.',
+        doctor: doctorDetails.doctorName,
+        hospital: doctorDetails.hospitalName,
+        city: doctorDetails.city,
+        state: doctorDetails.state,
+        diagnosis: doctorDetails.diagnosis || 'Field Assessment Required',
+        treatment: doctorDetails.treatment || 'Doctor Dispatched - In-person examination scheduled',
+        appointment: appointmentValue,
+        advice: doctorDetails.advice || 'Doctor has been dispatched to your location. Please be available for examination.',
         doctorsDispatched: group.doctorsNeeded,
         location: group.village,
         pincode: group.pincode,
@@ -223,14 +214,12 @@ function Dashboard() {
           {/* Stats Cards */}
           <StatsCards stats={stats} loading={loading} isAdmin={user?.isAdmin} />
 
-          {/* Dispatch Section - Near Hospital Performance */}
-          {user?.isAdmin && (
-            <DispatchSection 
-              patients={patients} 
-              onDispatch={handleDispatch}
-              onRefresh={fetchData}
-            />
-          )}
+          {/* Dispatch Section - Available to all hospitals */}
+          <DispatchSection 
+            patients={patients} 
+            onDispatch={handleDispatch}
+            onRefresh={fetchData}
+          />
 
           {/* Filters */}
           <div className="filters-card">

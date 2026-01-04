@@ -191,6 +191,17 @@ public class HospitalController {
             return ResponseEntity.ok(patients);
         }
         
+        // For non-admin hospitals, filter by their assigned region (pincodes)
+        if (hospitalOpt.isPresent()) {
+            Hospital hospital = hospitalOpt.get();
+            List<String> regionPincodes = hospital.getRegion();
+            if (regionPincodes != null && !regionPincodes.isEmpty()) {
+                List<PatientDashboardDto> patients = hospitalService.getPatientsByRegion(regionPincodes, search, disease, city, pincode, riskFactor);
+                return ResponseEntity.ok(patients);
+            }
+        }
+        
+        // Fallback to state-based filtering if no region is assigned
         List<PatientDashboardDto> patients = hospitalService.getPatientsByState(state, search, disease, city, pincode, riskFactor);
         return ResponseEntity.ok(patients);
     }
@@ -280,6 +291,16 @@ public class HospitalController {
         DashboardStatsDto stats;
         if (hospitalOpt.isPresent() && hospitalOpt.get().isAdmin()) {
             stats = hospitalService.getAllStats();
+        } else if (hospitalOpt.isPresent()) {
+            // For non-admin hospitals, get stats by their assigned region (pincodes)
+            Hospital hospital = hospitalOpt.get();
+            List<String> regionPincodes = hospital.getRegion();
+            if (regionPincodes != null && !regionPincodes.isEmpty()) {
+                stats = hospitalService.getStatsByRegion(regionPincodes);
+            } else {
+                // Fallback to state-based stats if no region is assigned
+                stats = hospitalService.getStatsByState(state);
+            }
         } else {
             stats = hospitalService.getStatsByState(state);
         }
