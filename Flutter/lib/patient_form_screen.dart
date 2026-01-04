@@ -119,7 +119,7 @@ class PatientFormScreenState extends State<PatientFormScreen> with PatientFormLo
                     child: Text("Urgent (Moderate Risk)"),
                   ),
                   DropdownMenuItem(
-                    value: 3.0,
+                    value: 2.0,
                     child: Text("Immediate (High Risk)"),
                   ),
                 ],
@@ -136,7 +136,7 @@ class PatientFormScreenState extends State<PatientFormScreen> with PatientFormLo
                     child: TextFormField(
                       controller: zipController,
                       keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(labelText: "Zipcode"),
+                      decoration: const InputDecoration(labelText: "Pincode"),
                       inputFormatters: [
                         FilteringTextInputFormatter.digitsOnly,
                         LengthLimitingTextInputFormatter(6),

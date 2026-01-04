@@ -239,7 +239,7 @@ mixin PatientFormLogic<T extends StatefulWidget> on State<T> {
               infoRow("State", selectedState ?? "N/A"),
               infoRow(
                   "Risk Level",
-                  riskFactor == 3.0
+                  riskFactor == 2.0
                       ? "Critical"
                       : (riskFactor == 1.5 ? "Urgent" : "Standard")
               ),
