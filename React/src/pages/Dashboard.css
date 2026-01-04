@@ -28,6 +28,12 @@
   font-size: 15px;
 }
 
+.dashboard-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .state-badge {
   display: inline-block;
   background: linear-gradient(135deg, #1e40af, #3b82f6);

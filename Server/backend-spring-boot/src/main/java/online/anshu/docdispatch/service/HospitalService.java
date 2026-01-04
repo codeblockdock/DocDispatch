@@ -1,6 +1,7 @@
 package online.anshu.docdispatch.service;
 
 import online.anshu.docdispatch.dto.*;
+import online.anshu.docdispatch.entity.Attended;
 import online.anshu.docdispatch.entity.Hospital;
 import online.anshu.docdispatch.entity.PatientLocation;
 import online.anshu.docdispatch.entity.PredictedDisease;
@@ -131,9 +132,9 @@ public class HospitalService {
         return null;
     }
     
-    public List<PatientDashboardDto> getAllPatients(String search, String disease, String city, String pincode) {
+    public List<PatientDashboardDto> getAllPatients(String search, String disease, String city, String pincode, String riskFactor) {
         System.out.println("\n========== FETCHING ALL PATIENTS (ADMIN) ==========");
-        System.out.println("Search: " + search + ", Disease: " + disease + ", City: " + city + ", Pincode: " + pincode);
+        System.out.println("Search: " + search + ", Disease: " + disease + ", City: " + city + ", Pincode: " + pincode + ", RiskFactor: " + riskFactor);
         
         // Get all patient locations
         List<PatientLocation> locations = patientLocationRepository.findAll();
@@ -181,6 +182,21 @@ public class HospitalService {
                 !predictedDisease.toLowerCase().contains(disease.toLowerCase())) {
                 continue;
             }
+
+            // Apply risk factor filter
+            if (riskFactor != null && !riskFactor.isEmpty()) {
+                boolean matches = false;
+                if (riskFactor.equalsIgnoreCase("low") && query.getRiskfactor() == 1.0) matches = true;
+                else if (riskFactor.equalsIgnoreCase("medium") && query.getRiskfactor() == 1.5) matches = true;
+                else if (riskFactor.equalsIgnoreCase("high") && query.getRiskfactor() == 3.0) matches = true;
+                else if (riskFactor.equalsIgnoreCase("priority")) {
+                    if ((query.getAge() >= 5 && query.getAge() <= 12) || (query.getAge() >= 51 && query.getAge() <= 60)) {
+                        matches = true;
+                    }
+                }
+                
+                if (!matches) continue;
+            }
             
             PatientDashboardDto dto = new PatientDashboardDto();
             dto.setId(query.getId());
@@ -189,6 +205,7 @@ public class HospitalService {
             dto.setPredictedDisease(predictedDisease);
             dto.setProbability(probability);
             dto.setCity(location.getCity());
+            dto.setVillage(location.getVillage());
             dto.setState(location.getState());
             dto.setPincode(location.getPincode());
             dto.setContact(query.getContact());
@@ -196,15 +213,15 @@ public class HospitalService {
             dto.setGender(query.getGender());
             dto.setTemperature(query.getTemperature());
             dto.setDays(query.getDays());
-            dto.setContagious(query.getContagious());
+            dto.setRiskfactor(query.getRiskfactor());
             dto.setAttended(query.getAttended());
             
-            // Set status based on attended flag and probability
+            // Set status based on attended flag and riskfactor/probability
             if (query.getAttended() == 1) {
                 dto.setStatus("Attended");
-            } else if (probability >= 70) {
+            } else if (query.getRiskfactor() == 3.0 || probability >= 70) {
                 dto.setStatus("High Risk");
-            } else if (probability >= 40) {
+            } else if (query.getRiskfactor() == 1.5 || probability >= 40) {
                 dto.setStatus("Medium Risk");
             } else {
                 dto.setStatus("Pending");
@@ -230,10 +247,10 @@ public class HospitalService {
         return patients;
     }
 
-    public List<PatientDashboardDto> getPatientsByState(String state, String search, String disease, String city, String pincode) {
+    public List<PatientDashboardDto> getPatientsByState(String state, String search, String disease, String city, String pincode, String riskFactor) {
         System.out.println("\n========== FETCHING PATIENTS BY STATE ==========");
         System.out.println("State: " + state);
-        System.out.println("Search: " + search + ", Disease: " + disease + ", City: " + city + ", Pincode: " + pincode);
+        System.out.println("Search: " + search + ", Disease: " + disease + ", City: " + city + ", Pincode: " + pincode + ", RiskFactor: " + riskFactor);
         
         // Get all patient locations in this state
         List<PatientLocation> locations = patientLocationRepository.findByState(state);
@@ -281,6 +298,21 @@ public class HospitalService {
                 !predictedDisease.toLowerCase().contains(disease.toLowerCase())) {
                 continue;
             }
+
+            // Apply risk factor filter
+            if (riskFactor != null && !riskFactor.isEmpty()) {
+                boolean matches = false;
+                if (riskFactor.equalsIgnoreCase("low") && query.getRiskfactor() == 1.0) matches = true;
+                else if (riskFactor.equalsIgnoreCase("medium") && query.getRiskfactor() == 1.5) matches = true;
+                else if (riskFactor.equalsIgnoreCase("high") && query.getRiskfactor() == 3.0) matches = true;
+                else if (riskFactor.equalsIgnoreCase("priority")) {
+                    if ((query.getAge() >= 5 && query.getAge() <= 12) || (query.getAge() >= 51 && query.getAge() <= 60)) {
+                        matches = true;
+                    }
+                }
+                
+                if (!matches) continue;
+            }
             
             PatientDashboardDto dto = new PatientDashboardDto();
             dto.setId(query.getId());
@@ -289,6 +321,7 @@ public class HospitalService {
             dto.setPredictedDisease(predictedDisease);
             dto.setProbability(probability);
             dto.setCity(location.getCity());
+            dto.setVillage(location.getVillage());
             dto.setState(location.getState());
             dto.setPincode(location.getPincode());
             dto.setContact(query.getContact());
@@ -296,15 +329,15 @@ public class HospitalService {
             dto.setGender(query.getGender());
             dto.setTemperature(query.getTemperature());
             dto.setDays(query.getDays());
-            dto.setContagious(query.getContagious());
+            dto.setRiskfactor(query.getRiskfactor());
             dto.setAttended(query.getAttended());
             
-            // Set status based on attended flag and probability
+            // Set status based on attended flag and riskfactor/probability
             if (query.getAttended() == 1) {
                 dto.setStatus("Attended");
-            } else if (probability >= 70) {
+            } else if (query.getRiskfactor() == 3.0 || probability >= 70) {
                 dto.setStatus("High Risk");
-            } else if (probability >= 40) {
+            } else if (query.getRiskfactor() == 1.5 || probability >= 40) {
                 dto.setStatus("Medium Risk");
             } else {
                 dto.setStatus("Pending");
@@ -388,15 +421,21 @@ public class HospitalService {
                 newlyReported++;
             }
             
-            // Check prediction for high risk and emergency
-            Optional<PredictedDisease> predictionOpt = predictedDiseaseRepository.findByQueryId(query.getId());
-            if (predictionOpt.isPresent()) {
-                double probability = predictionOpt.get().getProbability();
-                if (probability >= 0.7) {
-                    highRiskCases++;
+            // High Risk Cases: riskfactor is 3.0
+            if (query.getRiskfactor() == 3.0) {
+                highRiskCases++;
+                // If attended, minus 1
+                if (query.getAttended() == 1) {
+                    highRiskCases--;
                 }
-                if (probability >= 0.85 || query.getTemperature() >= 103) {
-                    emergencyPriority++;
+            }
+
+            // Priority Cases: age in 5-12 or 51-60 inclusive
+            if ((query.getAge() >= 5 && query.getAge() <= 12) || (query.getAge() >= 51 && query.getAge() <= 60)) {
+                emergencyPriority++;
+                // If attended, minus 1
+                if (query.getAttended() == 1) {
+                    emergencyPriority--;
                 }
             }
         }
@@ -450,6 +489,7 @@ public class HospitalService {
         dto.setName(query.getName());
         dto.setSymptoms(query.getSymptoms());
         dto.setCity(location.getCity());
+        dto.setVillage(location.getVillage());
         dto.setState(location.getState());
         dto.setPincode(location.getPincode());
         dto.setContact(query.getContact());
@@ -457,7 +497,7 @@ public class HospitalService {
         dto.setGender(query.getGender());
         dto.setTemperature(query.getTemperature());
         dto.setDays(query.getDays());
-        dto.setContagious(query.getContagious());
+        dto.setRiskfactor(query.getRiskfactor());
         dto.setAttended(query.getAttended());
         
         Optional<PredictedDisease> predictionOpt = predictedDiseaseRepository.findByQueryId(query.getId());
@@ -482,9 +522,9 @@ public class HospitalService {
                     dto.setAttendedTimestamp(formatter.format(attended.getTimestamp()));
                 }
             });
-        } else if (dto.getProbability() >= 70) {
+        } else if (query.getRiskfactor() == 3.0 || dto.getProbability() >= 70) {
             dto.setStatus("High Risk");
-        } else if (dto.getProbability() >= 40) {
+        } else if (query.getRiskfactor() == 1.5 || dto.getProbability() >= 40) {
             dto.setStatus("Medium Risk");
         } else {
             dto.setStatus("Pending");
@@ -517,6 +557,7 @@ public class HospitalService {
         dto.setName(query.getName());
         dto.setSymptoms(query.getSymptoms());
         dto.setCity(location.getCity());
+        dto.setVillage(location.getVillage());
         dto.setState(location.getState());
         dto.setPincode(location.getPincode());
         dto.setContact(query.getContact());
@@ -524,7 +565,7 @@ public class HospitalService {
         dto.setGender(query.getGender());
         dto.setTemperature(query.getTemperature());
         dto.setDays(query.getDays());
-        dto.setContagious(query.getContagious());
+        dto.setRiskfactor(query.getRiskfactor());
         dto.setAttended(query.getAttended());
         
         Optional<PredictedDisease> predictionOpt = predictedDiseaseRepository.findByQueryId(query.getId());
@@ -549,9 +590,9 @@ public class HospitalService {
                     dto.setAttendedTimestamp(formatter.format(attended.getTimestamp()));
                 }
             });
-        } else if (dto.getProbability() >= 70) {
+        } else if (query.getRiskfactor() == 3.0 || dto.getProbability() >= 70) {
             dto.setStatus("High Risk");
-        } else if (dto.getProbability() >= 40) {
+        } else if (query.getRiskfactor() == 1.5 || dto.getProbability() >= 40) {
             dto.setStatus("Medium Risk");
         } else {
             dto.setStatus("Pending");
@@ -606,5 +647,123 @@ public class HospitalService {
     
     public void saveHospital(Hospital hospital) {
         hospitalRepository.save(hospital);
+    }
+
+    public List<HospitalStatsDto> getHospitalStatsList() {
+        System.out.println("\n========== FETCHING ALL HOSPITAL STATS (ADMIN) ==========");
+        
+        List<Hospital> hospitals = hospitalRepository.findAll();
+        List<Query> allQueries = queryRepository.findAll();
+        List<PatientLocation> allLocations = patientLocationRepository.findAll();
+        List<Attended> allAttended = attendedRepository.findAll();
+        
+        // Map queryId to location for quick lookup
+        Map<String, PatientLocation> locationMap = new HashMap<>();
+        for (PatientLocation loc : allLocations) {
+            locationMap.put(loc.getQueryId(), loc);
+        }
+        
+        // Map queryId to query for quick lookup
+        Map<String, Query> queryMap = new HashMap<>();
+        for (Query q : allQueries) {
+            queryMap.put(q.getId(), q);
+        }
+
+        List<HospitalStatsDto> result = new ArrayList<>();
+        
+        for (Hospital hospital : hospitals) {
+            if (hospital.isAdmin()) continue;
+            
+            HospitalStatsDto dto = new HospitalStatsDto();
+            dto.setHospitalId(hospital.getHospitalId());
+            dto.setHospitalName(hospital.getName());
+            dto.setState(hospital.getState());
+            dto.setCity(hospital.getCity());
+            dto.setActive(hospital.isActive());
+            
+            String hospitalState = hospital.getState();
+            List<String> hospitalRegion = hospital.getRegion() != null ? hospital.getRegion() : new ArrayList<>();
+            
+            long stateTotal = 0;
+            long hospitalAttended = 0;
+            long regionTotal = 0;
+            long regionAttended = 0;
+            
+            Map<String, Long> hospitalPriority = new HashMap<>();
+            hospitalPriority.put("Low", 0L);
+            hospitalPriority.put("Medium", 0L);
+            hospitalPriority.put("High", 0L);
+            hospitalPriority.put("Priority", 0L);
+            
+            Map<String, Long> regionPriority = new HashMap<>();
+            regionPriority.put("Low", 0L);
+            regionPriority.put("Medium", 0L);
+            regionPriority.put("High", 0L);
+            regionPriority.put("Priority", 0L);
+            
+            // Calculate state total
+            for (PatientLocation loc : allLocations) {
+                if (loc.getState() != null && loc.getState().equalsIgnoreCase(hospitalState)) {
+                    stateTotal++;
+                }
+                
+                // Calculate region total
+                if (hospitalRegion.contains(loc.getPincode())) {
+                    regionTotal++;
+                }
+            }
+            
+            // Calculate hospital attended and priority stats
+            for (Attended attended : allAttended) {
+                if (attended.getHospital() != null && attended.getHospital().equalsIgnoreCase(hospital.getName())) {
+                    hospitalAttended++;
+                    
+                    Query q = queryMap.get(attended.getQueryId());
+                    if (q != null) {
+                        updatePriorityStats(hospitalPriority, q);
+                        
+                        // Check if this attended query is in the hospital's region
+                        PatientLocation loc = locationMap.get(attended.getQueryId());
+                        if (loc != null && hospitalRegion.contains(loc.getPincode())) {
+                            regionAttended++;
+                            updatePriorityStats(regionPriority, q);
+                        }
+                    }
+                }
+            }
+            
+            dto.setStateTotalCases(stateTotal);
+            dto.setHospitalAttendedCases(hospitalAttended);
+            dto.setHospitalPriorityStats(hospitalPriority);
+            dto.setRegionTotalCases(regionTotal);
+            dto.setRegionAttendedCases(regionAttended);
+            dto.setRegionPriorityStats(regionPriority);
+            
+            result.add(dto);
+        }
+        
+        return result;
+    }
+
+    public boolean toggleHospitalStatus(String hospitalId) {
+        Optional<Hospital> hospitalOpt = hospitalRepository.findByHospitalId(hospitalId);
+        if (hospitalOpt.isPresent()) {
+            Hospital hospital = hospitalOpt.get();
+            hospital.setActive(!hospital.isActive());
+            hospitalRepository.save(hospital);
+            System.out.println("Hospital " + hospitalId + " status toggled to: " + hospital.isActive());
+            return true;
+        }
+        return false;
+    }
+
+    private void updatePriorityStats(Map<String, Long> stats, Query q) {
+        if (q.getRiskfactor() == 1.0) stats.put("Low", stats.get("Low") + 1);
+        else if (q.getRiskfactor() == 1.5) stats.put("Medium", stats.get("Medium") + 1);
+        else if (q.getRiskfactor() == 3.0) stats.put("High", stats.get("High") + 1);
+        
+        if ((q.getAge() >= 5 && q.getAge() <= 12) || (q.getAge() >= 51 && q.getAge() <= 60)) {
+            stats.put("Priority", stats.get("Priority") + 1);
+        }
     }
 }

@@ -181,6 +181,11 @@ input, select, textarea {
   color: #92400e;
 }
 
+.badge-orange {
+  background: #ffedd5;
+  color: #9a3412;
+}
+
 .badge-danger {
   background: #fee2e2;
   color: #991b1b;
@@ -194,6 +199,11 @@ input, select, textarea {
 .badge-secondary {
   background: var(--gray-100);
   color: var(--gray-600);
+}
+
+.badge-purple {
+  background: #f3e8ff;
+  color: #6b21a8;
 }
 
 /* Table Styles */

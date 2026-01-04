@@ -50,11 +50,12 @@ public class QueryService {
         System.out.println("Gender: " + request.getGender());
         System.out.println("Temperature: " + request.getTemperature());
         System.out.println("Days Sick: " + request.getDays());
-        System.out.println("Contagious: " + request.getContagious());
+        System.out.println("Risk Factor: " + request.getRiskfactor());
         System.out.println("Symptoms: " + request.getSymptoms());
         if (request.getAddress() != null) {
             System.out.println("Address - Zip: " + request.getAddress().getZip() + 
                              ", City: " + request.getAddress().getCity() + 
+                             ", Village: " + request.getAddress().getVillage() +
                              ", State: " + request.getAddress().getState());
         }
         System.out.println("========================================\n");
@@ -69,7 +70,7 @@ public class QueryService {
         query.setGender(request.getGender());
         query.setTemperature(request.getTemperature());
         query.setDays(request.getDays());
-        query.setContagious(request.getContagious());
+        query.setRiskfactor(request.getRiskfactor());
         query.setAttended(0);
         query.setReceivedAt(Date.from(ZonedDateTime.now(ZoneId.of("Asia/Kolkata")).toInstant()));
         
@@ -92,6 +93,7 @@ public class QueryService {
                 location.setQueryId(savedQuery.getId());
                 location.setPincode(request.getAddress().getZip());
                 location.setCity(request.getAddress().getCity());
+                location.setVillage(request.getAddress().getVillage());
                 location.setState(request.getAddress().getState());
                 
                 patientLocationRepository.save(location);

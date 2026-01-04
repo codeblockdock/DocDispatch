@@ -172,7 +172,8 @@ public class HospitalController {
             @RequestParam(required = false) String search,
             @RequestParam(required = false) String disease,
             @RequestParam(required = false) String city,
-            @RequestParam(required = false) String pincode) {
+            @RequestParam(required = false) String pincode,
+            @RequestParam(required = false) String riskFactor) {
         
         String token = extractToken(authHeader);
         String state = hospitalService.getHospitalStateFromToken(token);
@@ -186,11 +187,11 @@ public class HospitalController {
         
         Optional<Hospital> hospitalOpt = hospitalService.findByHospitalId(hospitalId);
         if (hospitalOpt.isPresent() && hospitalOpt.get().isAdmin()) {
-            List<PatientDashboardDto> patients = hospitalService.getAllPatients(search, disease, city, pincode);
+            List<PatientDashboardDto> patients = hospitalService.getAllPatients(search, disease, city, pincode, riskFactor);
             return ResponseEntity.ok(patients);
         }
         
-        List<PatientDashboardDto> patients = hospitalService.getPatientsByState(state, search, disease, city, pincode);
+        List<PatientDashboardDto> patients = hospitalService.getPatientsByState(state, search, disease, city, pincode, riskFactor);
         return ResponseEntity.ok(patients);
     }
     
@@ -284,6 +285,61 @@ public class HospitalController {
         }
         
         return ResponseEntity.ok(stats);
+    }
+
+    @GetMapping("/all-hospital-stats")
+    public ResponseEntity<?> getAllHospitalStats(@RequestHeader("Authorization") String authHeader) {
+        String token = extractToken(authHeader);
+        String hospitalId = hospitalService.getHospitalIdFromToken(token);
+        
+        if (hospitalId == null) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Invalid or expired token");
+            return ResponseEntity.status(401).body(error);
+        }
+        
+        Optional<Hospital> hospitalOpt = hospitalService.findByHospitalId(hospitalId);
+        if (hospitalOpt.isPresent() && hospitalOpt.get().isAdmin()) {
+            List<HospitalStatsDto> stats = hospitalService.getHospitalStatsList();
+            return ResponseEntity.ok(stats);
+        }
+        
+        Map<String, String> error = new HashMap<>();
+        error.put("error", "Access denied: Admin only");
+        return ResponseEntity.status(403).body(error);
+    }
+
+    @PostMapping("/toggle-status/{hospitalId}")
+    public ResponseEntity<?> toggleHospitalStatus(
+            @RequestHeader("Authorization") String authHeader,
+            @PathVariable String hospitalId) {
+        
+        String token = extractToken(authHeader);
+        String adminId = hospitalService.getHospitalIdFromToken(token);
+        
+        if (adminId == null) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Invalid or expired token");
+            return ResponseEntity.status(401).body(error);
+        }
+        
+        Optional<Hospital> adminOpt = hospitalService.findByHospitalId(adminId);
+        if (adminOpt.isPresent() && adminOpt.get().isAdmin()) {
+            boolean success = hospitalService.toggleHospitalStatus(hospitalId);
+            if (success) {
+                Map<String, String> response = new HashMap<>();
+                response.put("message", "Hospital status updated successfully");
+                return ResponseEntity.ok(response);
+            } else {
+                Map<String, String> error = new HashMap<>();
+                error.put("error", "Hospital not found");
+                return ResponseEntity.status(404).body(error);
+            }
+        }
+        
+        Map<String, String> error = new HashMap<>();
+        error.put("error", "Access denied: Admin only");
+        return ResponseEntity.status(403).body(error);
     }
     
     @GetMapping("/verify")

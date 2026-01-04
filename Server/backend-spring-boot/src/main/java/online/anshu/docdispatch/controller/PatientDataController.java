@@ -81,7 +81,7 @@ public class PatientDataController {
             query.setGender(request.getGender() != null ? request.getGender() : "");
             query.setTemperature(request.getTemperature());
             query.setDays(request.getDays());
-            query.setContagious(request.getContagious() != null ? request.getContagious() : "Unknown");
+            query.setRiskfactor(request.getRiskfactor());
             query.setAttended(0);
             query.setReceivedAt(Date.from(ZonedDateTime.now(ZoneId.of("Asia/Kolkata")).toInstant()));
             
@@ -95,6 +95,7 @@ public class PatientDataController {
                 newLocation.setQueryId(savedQuery.getId());
                 newLocation.setPincode("");
                 newLocation.setCity("Unknown");
+                newLocation.setVillage("Unknown");
                 newLocation.setState("Unknown");
                 patientLocationRepository.save(newLocation);
             } else if (location != null) {
@@ -103,6 +104,7 @@ public class PatientDataController {
                 queryLocation.setQueryId(savedQuery.getId());
                 queryLocation.setPincode(location.getPincode());
                 queryLocation.setCity(location.getCity());
+                queryLocation.setVillage(location.getVillage());
                 queryLocation.setState(location.getState());
                 patientLocationRepository.save(queryLocation);
             }
@@ -153,6 +155,7 @@ public class PatientDataController {
                 ((Number) requestBody.get("probability")).intValue() : 0;
             String pincode = (String) requestBody.getOrDefault("pincode", "");
             String city = (String) requestBody.getOrDefault("city", "");
+            String village = (String) requestBody.getOrDefault("village", "");
             String state = (String) requestBody.getOrDefault("state", "");
             String contact = (String) requestBody.getOrDefault("contact", "");
             int age = requestBody.get("age") != null ? ((Number) requestBody.get("age")).intValue() : 0;
@@ -160,7 +163,8 @@ public class PatientDataController {
             int temperature = requestBody.get("temperature") != null ? 
                 ((Number) requestBody.get("temperature")).intValue() : 0;
             int days = requestBody.get("days") != null ? ((Number) requestBody.get("days")).intValue() : 0;
-            String contagious = (String) requestBody.getOrDefault("contagious", "Unknown");
+            double riskfactor = requestBody.get("riskfactor") != null ? 
+                ((Number) requestBody.get("riskfactor")).doubleValue() : 1.0;
             
             System.out.println("Name: " + name + ", City: " + city + ", State: " + state);
             
@@ -173,7 +177,7 @@ public class PatientDataController {
             query.setGender(gender);
             query.setTemperature(temperature);
             query.setDays(days);
-            query.setContagious(contagious);
+            query.setRiskfactor(riskfactor);
             query.setAttended(0);
             query.setReceivedAt(Date.from(ZonedDateTime.now(ZoneId.of("Asia/Kolkata")).toInstant()));
             
@@ -184,6 +188,7 @@ public class PatientDataController {
             location.setQueryId(savedQuery.getId());
             location.setPincode(pincode);
             location.setCity(city);
+            location.setVillage(village);
             location.setState(state);
             patientLocationRepository.save(location);
             

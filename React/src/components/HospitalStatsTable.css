@@ -1,0 +1,161 @@
+.hospital-stats-container {
+  margin: 2rem 0;
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.hospital-stats-container h3 {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  color: #2c3e50;
+  font-size: 1.25rem;
+  border-left: 4px solid #3498db;
+  padding-left: 10px;
+}
+
+.table-responsive {
+  overflow-x: auto;
+}
+
+.hospital-stats-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.hospital-stats-table th,
+.hospital-stats-table td {
+  padding: 12px 8px;
+  text-align: center;
+  border: 1px solid #edf2f7;
+}
+
+.hospital-stats-table th {
+  background-color: #f8fafc;
+  color: #4a5568;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+}
+
+.hospital-stats-table tr:hover {
+  background-color: #f1f5f9;
+}
+
+.hospital-name {
+  text-align: left !important;
+  font-weight: 600;
+  color: #2d3748;
+  min-width: 150px;
+  display: flex;
+  flex-direction: column;
+}
+
+.blocked-badge {
+  font-size: 0.7rem;
+  color: #e53e3e;
+  background: #fff5f5;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-top: 4px;
+  width: fit-content;
+  border: 1px solid #feb2b2;
+}
+
+.row-blocked {
+  background-color: #fff5f5 !important;
+}
+
+.status-indicator {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.status-active {
+  background-color: #c6f6d5;
+  color: #22543d;
+}
+
+.status-inactive {
+  background-color: #fed7d7;
+  color: #822727;
+}
+
+.btn-toggle {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+  min-width: 70px;
+}
+
+.btn-activate {
+  background-color: #48bb78;
+  color: white;
+}
+
+.btn-activate:hover {
+  background-color: #38a169;
+}
+
+.btn-deactivate {
+  background-color: #e53e3e;
+  color: white;
+}
+
+.btn-deactivate:hover {
+  background-color: #c53030;
+}
+
+.btn-toggle:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.count-cell {
+  font-family: 'Roboto Mono', monospace;
+  font-weight: 500;
+}
+
+.highlight {
+  background-color: #ebf8ff;
+  color: #2b6cb0;
+  font-weight: 700;
+}
+
+.region-cell {
+  background-color: #f0fff4;
+}
+
+.region-cell.highlight {
+  background-color: #c6f6d5;
+  color: #22543d;
+}
+
+.no-stats {
+  padding: 2rem;
+  text-align: center;
+  color: #718096;
+  background: white;
+  border-radius: 12px;
+  margin: 2rem 0;
+}
+
+@media (max-width: 1024px) {
+  .hospital-stats-table {
+    font-size: 0.8rem;
+  }
+  
+  .hospital-stats-table th,
+  .hospital-stats-table td {
+    padding: 8px 4px;
+  }
+}

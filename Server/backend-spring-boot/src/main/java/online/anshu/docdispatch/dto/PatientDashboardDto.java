@@ -15,7 +15,8 @@ public class PatientDashboardDto {
     private String gender;
     private int temperature;
     private int days;
-    private String contagious;
+    private double riskfactor;
+    private String village;
     private String receivedAt;
     private int attended;
     private String doctor;
@@ -44,6 +45,9 @@ public class PatientDashboardDto {
     
     public String getCity() { return city; }
     public void setCity(String city) { this.city = city; }
+
+    public String getVillage() { return village; }
+    public void setVillage(String village) { this.village = village; }
     
     public String getState() { return state; }
     public void setState(String state) { this.state = state; }
@@ -69,8 +73,8 @@ public class PatientDashboardDto {
     public int getDays() { return days; }
     public void setDays(int days) { this.days = days; }
     
-    public String getContagious() { return contagious; }
-    public void setContagious(String contagious) { this.contagious = contagious; }
+    public double getRiskfactor() { return riskfactor; }
+    public void setRiskfactor(double riskfactor) { this.riskfactor = riskfactor; }
     
     public String getReceivedAt() { return receivedAt; }
     public void setReceivedAt(String receivedAt) { this.receivedAt = receivedAt; }

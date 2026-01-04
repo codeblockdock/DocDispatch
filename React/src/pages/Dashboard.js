@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { patientAPI, statsAPI } from '../services/api';
 import Header from '../components/Header';
@@ -11,6 +12,7 @@ import './Dashboard.css';
 
 function Dashboard() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [patients, setPatients] = useState([]);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -22,6 +24,7 @@ function Dashboard() {
     city: '',
     pincode: '',
     state: '',
+    riskFactor: '',
   });
   
   // Modals
@@ -69,6 +72,7 @@ function Dashboard() {
       search: '',
       city: '',
       pincode: '',
+      riskFactor: '',
     });
   };
 
@@ -106,18 +110,32 @@ function Dashboard() {
                 Viewing patients from <span className="state-badge">{user?.state}</span>
               </p>
             </div>
-            <button className="btn btn-primary" onClick={fetchData}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M23 4v6h-6"/>
-                <path d="M1 20v-6h6"/>
-                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
-              </svg>
-              Refresh
-            </button>
+            <div className="dashboard-actions">
+              {user?.isAdmin && (
+                <button 
+                  className="btn btn-secondary" 
+                  onClick={() => navigate('/hospital-metrics')}
+                  style={{ marginRight: '1rem' }}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: '0.5rem' }}>
+                    <path d="M12 20v-6M6 20V10M18 20V4"/>
+                  </svg>
+                  Hospital Performance
+                </button>
+              )}
+              <button className="btn btn-primary" onClick={fetchData}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M23 4v6h-6"/>
+                  <path d="M1 20v-6h6"/>
+                  <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+                </svg>
+                Refresh
+              </button>
+            </div>
           </div>
 
           {/* Stats Cards */}
-          <StatsCards stats={stats} loading={loading} />
+          <StatsCards stats={stats} loading={loading} isAdmin={user?.isAdmin} />
 
           {/* Filters */}
           <div className="filters-card">
@@ -151,6 +169,20 @@ function Dashboard() {
                   className="form-input"
                   placeholder="Filter by pincode..."
                 />
+              </div>
+              <div className="filter-group">
+                <select
+                  name="riskFactor"
+                  value={filters.riskFactor}
+                  onChange={handleFilterChange}
+                  className="form-input"
+                >
+                  <option value="">All Risk Factors</option>
+                  <option value="low">Low Risk</option>
+                  <option value="medium">Medium Risk</option>
+                  <option value="high">High Risk</option>
+                  <option value="priority">Priority</option>
+                </select>
               </div>
               <button type="submit" className="btn btn-primary">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

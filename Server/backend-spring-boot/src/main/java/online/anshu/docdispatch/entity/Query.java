@@ -24,7 +24,7 @@ public class Query {
     
     private int days;
     
-    private String contagious;
+    private double riskfactor;
     
     private String symptoms;
     
@@ -58,8 +58,8 @@ public class Query {
     public int getDays() { return days; }
     public void setDays(int days) { this.days = days; }
     
-    public String getContagious() { return contagious; }
-    public void setContagious(String contagious) { this.contagious = contagious; }
+    public double getRiskfactor() { return riskfactor; }
+    public void setRiskfactor(double riskfactor) { this.riskfactor = riskfactor; }
     
     public String getSymptoms() { return symptoms; }
     public void setSymptoms(String symptoms) { this.symptoms = symptoms; }

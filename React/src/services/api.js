@@ -22,7 +22,7 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    if (error.response?.status === 401 && !window.location.pathname.includes('/login')) {
       localStorage.removeItem('hospitalToken');
       localStorage.removeItem('hospitalData');
       window.location.href = '/login';
@@ -50,6 +50,7 @@ export const patientAPI = {
     if (params.search) queryParams.append('search', params.search);
     if (params.city) queryParams.append('city', params.city);
     if (params.pincode) queryParams.append('pincode', params.pincode);
+    if (params.riskFactor) queryParams.append('riskFactor', params.riskFactor);
     
     const queryString = queryParams.toString();
     return api.get(`/hospital/patients${queryString ? `?${queryString}` : ''}`);
@@ -69,6 +70,8 @@ export const patientAPI = {
 // Stats API
 export const statsAPI = {
   get: () => api.get('/hospital/stats'),
+  getAllHospitalStats: () => api.get('/hospital/all-hospital-stats'),
+  toggleHospitalStatus: (hospitalId) => api.post(`/hospital/toggle-status/${hospitalId}`),
 };
 
 export default api;

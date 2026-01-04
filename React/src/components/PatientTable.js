@@ -2,14 +2,25 @@ import React from 'react';
 import './PatientTable.css';
 
 function PatientTable({ patients, loading, onView, onAttend, onViewReceipt }) {
-  const getStatusBadge = (status) => {
-    const statusMap = {
-      'High Risk': 'badge-danger',
-      'Medium Risk': 'badge-warning',
-      'Attended': 'badge-success',
-      'Pending': 'badge-secondary',
-    };
-    return statusMap[status] || 'badge-secondary';
+  const getRiskBadge = (risk, age) => {
+    if ((age >= 5 && age <= 12) || (age >= 51 && age <= 60)) return 'badge-purple';
+    if (risk === 3.0) return 'badge-danger';
+    if (risk === 1.5) return 'badge-orange';
+    if (risk === 1.0) return 'badge-warning';
+    return 'badge-secondary';
+  };
+
+  const getRiskLabel = (risk, age) => {
+    let labels = [];
+    if (risk === 3.0) labels.push('High');
+    else if (risk === 1.5) labels.push('Medium');
+    else if (risk === 1.0) labels.push('Low');
+    
+    if ((age >= 5 && age <= 12) || (age >= 51 && age <= 60)) {
+      labels.push('Priority');
+    }
+    
+    return labels.length > 0 ? labels.join(' + ') : 'N/A';
   };
 
   const parseSymptoms = (symptoms) => {
@@ -57,10 +68,10 @@ function PatientTable({ patients, loading, onView, onAttend, onViewReceipt }) {
           <tr>
             <th>Patient Name</th>
             <th>Age</th>
+            <th>Risk Factor</th>
             <th>Symptoms</th>
             <th>City</th>
             <th>State</th>
-            <th>Status</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -82,6 +93,11 @@ function PatientTable({ patients, loading, onView, onAttend, onViewReceipt }) {
                 <span className="age-cell">{patient.age} yrs</span>
               </td>
               <td>
+                <span className={`badge ${getRiskBadge(patient.riskfactor, patient.age)}`}>
+                  {getRiskLabel(patient.riskfactor, patient.age)}
+                </span>
+              </td>
+              <td>
                 <div className="symptoms-cell">
                   {parseSymptoms(patient.symptoms).slice(0, 3).map((symptom, i) => (
                     <span key={i} className="symptom-tag">{symptom}</span>
@@ -95,11 +111,6 @@ function PatientTable({ patients, loading, onView, onAttend, onViewReceipt }) {
               </td>
               <td>{patient.city}</td>
               <td>{patient.state}</td>
-              <td>
-                <span className={`badge ${getStatusBadge(patient.status)}`}>
-                  {patient.status}
-                </span>
-              </td>
               <td>
                 <div className="actions-cell">
                   <button 

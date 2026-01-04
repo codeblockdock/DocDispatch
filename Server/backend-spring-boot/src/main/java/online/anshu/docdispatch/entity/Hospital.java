@@ -35,6 +35,8 @@ public class Hospital {
     private Date lastLogin;
     
     private String token;
+    
+    private java.util.List<String> region = new java.util.ArrayList<>();
 
     public Hospital() {
     }
@@ -78,4 +80,7 @@ public class Hospital {
     
     public String getToken() { return token; }
     public void setToken(String token) { this.token = token; }
+
+    public java.util.List<String> getRegion() { return region; }
+    public void setRegion(java.util.List<String> region) { this.region = region; }
 }

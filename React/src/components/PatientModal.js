@@ -14,14 +14,25 @@ function PatientModal({ patient, onClose }) {
     }
   };
 
-  const getStatusBadge = (status) => {
-    const statusMap = {
-      'High Risk': 'badge-danger',
-      'Medium Risk': 'badge-warning',
-      'Attended': 'badge-success',
-      'Pending': 'badge-secondary',
-    };
-    return statusMap[status] || 'badge-secondary';
+  const getRiskBadge = (risk, age) => {
+    if ((age >= 5 && age <= 12) || (age >= 51 && age <= 60)) return 'badge-purple';
+    if (risk === 3.0) return 'badge-danger';
+    if (risk === 1.5) return 'badge-orange';
+    if (risk === 1.0) return 'badge-warning';
+    return 'badge-secondary';
+  };
+
+  const getRiskLabel = (risk, age) => {
+    let labels = [];
+    if (risk === 3.0) labels.push('High');
+    else if (risk === 1.5) labels.push('Medium');
+    else if (risk === 1.0) labels.push('Low');
+    
+    if ((age >= 5 && age <= 12) || (age >= 51 && age <= 60)) {
+      labels.push('Priority');
+    }
+    
+    return labels.length > 0 ? labels.join(' + ') : 'N/A';
   };
 
   return (
@@ -49,9 +60,6 @@ function PatientModal({ patient, onClose }) {
                 <p className="patient-meta">
                   {patient.age} years • {patient.gender} • {patient.contact}
                 </p>
-                <span className={`badge ${getStatusBadge(patient.status)}`}>
-                  {patient.status}
-                </span>
               </div>
             </div>
           </div>
@@ -60,7 +68,9 @@ function PatientModal({ patient, onClose }) {
           <div className="details-grid">
             <div className="detail-item">
               <span className="detail-label">Location</span>
-              <span className="detail-value">{patient.city}, {patient.state}</span>
+              <span className="detail-value">
+                {patient.village ? `${patient.village}, ` : ''}{patient.city}, {patient.state}
+              </span>
             </div>
             <div className="detail-item">
               <span className="detail-label">Pincode</span>
@@ -75,8 +85,10 @@ function PatientModal({ patient, onClose }) {
               <span className="detail-value">{patient.days} days</span>
             </div>
             <div className="detail-item">
-              <span className="detail-label">Contagious</span>
-              <span className="detail-value">{patient.contagious}</span>
+              <span className="detail-label">Risk Factor</span>
+              <span className={`badge ${getRiskBadge(patient.riskfactor, patient.age)}`}>
+                {getRiskLabel(patient.riskfactor, patient.age)}
+              </span>
             </div>
             <div className="detail-item">
               <span className="detail-label">Received At</span>

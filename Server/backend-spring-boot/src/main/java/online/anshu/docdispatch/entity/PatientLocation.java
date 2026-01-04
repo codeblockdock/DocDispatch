@@ -12,16 +12,19 @@ public class PatientLocation {
     private String pincode;
     
     private String city;
+
+    private String village;
     
     private String state;
     
     // Constructors
     public PatientLocation() {}
     
-    public PatientLocation(String queryId, String pincode, String city, String state) {
+    public PatientLocation(String queryId, String pincode, String city, String village, String state) {
         this.queryId = queryId;
         this.pincode = pincode;
         this.city = city;
+        this.village = village;
         this.state = state;
     }
     
@@ -34,6 +37,9 @@ public class PatientLocation {
     
     public String getCity() { return city; }
     public void setCity(String city) { this.city = city; }
+
+    public String getVillage() { return village; }
+    public void setVillage(String village) { this.village = village; }
     
     public String getState() { return state; }
     public void setState(String state) { this.state = state; }

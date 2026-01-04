@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
+import HospitalMetrics from './pages/HospitalMetrics';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
 // Protected Route Component
@@ -47,6 +48,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Dashboard />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/hospital-metrics" 
+        element={
+          <ProtectedRoute>
+            <HospitalMetrics />
           </ProtectedRoute>
         } 
       />

@@ -1,7 +1,7 @@
 import React from 'react';
 import './StatsCards.css';
 
-function StatsCards({ stats, loading }) {
+function StatsCards({ stats, loading, isAdmin }) {
   const patientCards = [
     {
       title: 'Total Patients',
@@ -41,7 +41,7 @@ function StatsCards({ stats, loading }) {
       color: 'green',
     },
     {
-      title: 'Emergency Priority',
+      title: 'Priority Cases',
       value: stats?.emergencyPriority || 0,
       icon: (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -151,18 +151,20 @@ function StatsCards({ stats, loading }) {
             ))}
           </div>
         </div>
-        <div className="stats-section">
-          <h3 className="stats-section-title">Platform Overview</h3>
-          <div className="stats-grid">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="stats-card stats-card-loading">
-                <div className="stats-skeleton stats-skeleton-icon"></div>
-                <div className="stats-skeleton stats-skeleton-text"></div>
-                <div className="stats-skeleton stats-skeleton-value"></div>
-              </div>
-            ))}
+        {isAdmin && (
+          <div className="stats-section">
+            <h3 className="stats-section-title">Platform Overview</h3>
+            <div className="stats-grid">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="stats-card stats-card-loading">
+                  <div className="stats-skeleton stats-skeleton-icon"></div>
+                  <div className="stats-skeleton stats-skeleton-text"></div>
+                  <div className="stats-skeleton stats-skeleton-value"></div>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     );
   }
@@ -189,25 +191,27 @@ function StatsCards({ stats, loading }) {
         </div>
       </div>
       
-      <div className="stats-section">
-        <h3 className="stats-section-title">Platform Overview</h3>
-        <div className="stats-grid">
-          {systemCards.map((card, index) => (
-            <div key={index} className={`stats-card stats-card-${card.color}`}>
-              <div className="stats-card-header">
-                <div className={`stats-icon stats-icon-${card.color}`}>
-                  {card.icon}
+      {isAdmin && (
+        <div className="stats-section">
+          <h3 className="stats-section-title">Platform Overview</h3>
+          <div className="stats-grid">
+            {systemCards.map((card, index) => (
+              <div key={index} className={`stats-card stats-card-${card.color}`}>
+                <div className="stats-card-header">
+                  <div className={`stats-icon stats-icon-${card.color}`}>
+                    {card.icon}
+                  </div>
+                </div>
+                <div className="stats-card-body">
+                  <p className="stats-title">{card.title}</p>
+                  <h3 className="stats-value">{card.value.toLocaleString()}</h3>
+                  {card.subtitle && <p className="stats-subtitle">{card.subtitle}</p>}
                 </div>
               </div>
-              <div className="stats-card-body">
-                <p className="stats-title">{card.title}</p>
-                <h3 className="stats-value">{card.value.toLocaleString()}</h3>
-                {card.subtitle && <p className="stats-subtitle">{card.subtitle}</p>}
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
