@@ -13,9 +13,10 @@ mixin PatientFormLogic<T extends StatefulWidget> on State<T> {
   final daysController = TextEditingController();
   final zipController = TextEditingController();
   final cityController = TextEditingController();
+  final villageController = TextEditingController();
 
   String? selectedState;
-  bool contagious = false;
+  double? riskFactor;
   bool loading = false;
   String gender = "";
   AutovalidateMode autoValidate = AutovalidateMode.disabled;
@@ -23,7 +24,6 @@ mixin PatientFormLogic<T extends StatefulWidget> on State<T> {
   final List<String> commonSymptoms = [
     "Fever", "Cough", "Cold", "Headache", "Sore Throat", "Fatigue", "Loss of Appetite"
   ];
-
   final List<String> suggestionDatabase = [
     "Abdominal Pain", "Abnormal Menstruation", "Acidity", "Acute Liver Failure",
     "Altered Sensorium", "Anxiety", "Back Pain", "Belly Pain", "Blackheads",
@@ -69,6 +69,39 @@ mixin PatientFormLogic<T extends StatefulWidget> on State<T> {
     "Uttar Pradesh", "Uttarakhand", "West Bengal", "Delhi", "Chandigarh"
   ];
 
+  final Map<String, List<String>> statePinPrefixes = {
+    "Andhra Pradesh": ["51", "52", "53"],
+    "Arunachal Pradesh": ["79"],
+    "Assam": ["78"],
+    "Bihar": ["80", "81", "82", "83", "84", "85"],
+    "Chhattisgarh": ["49"],
+    "Goa": ["40"],
+    "Gujarat": ["36", "37", "38", "39"],
+    "Haryana": ["12", "13"],
+    "Himachal Pradesh": ["17"],
+    "Jharkhand": ["81", "82", "83"],
+    "Karnataka": ["56", "57", "58", "59"],
+    "Kerala": ["67", "68", "69"],
+    "Madhya Pradesh": ["45", "46", "47", "48"],
+    "Maharashtra": ["40", "41", "42", "43", "44"],
+    "Manipur": ["79"],
+    "Meghalaya": ["79"],
+    "Mizoram": ["79"],
+    "Nagaland": ["79"],
+    "Odisha": ["75", "76", "77"],
+    "Punjab": ["14", "15"],
+    "Rajasthan": ["30", "31", "32", "33", "34"],
+    "Sikkim": ["73"],
+    "Tamil Nadu": ["60", "61", "62", "63", "64", "65", "66"],
+    "Telangana": ["50"],
+    "Tripura": ["79"],
+    "Uttar Pradesh": ["20", "21", "22", "23", "24", "25", "26", "27", "28"],
+    "Uttarakhand": ["24", "26"],
+    "West Bengal": ["70", "71", "72", "73", "74"],
+    "Delhi": ["11"],
+    "Chandigarh": ["16"],
+  };
+
   final List<String> selectedSymptoms = [];
 
   @override
@@ -85,7 +118,19 @@ mixin PatientFormLogic<T extends StatefulWidget> on State<T> {
     daysController.dispose();
     zipController.dispose();
     cityController.dispose();
+    villageController.dispose();
     super.dispose();
+  }
+
+  bool isValidPinForState(String pin, String? state) {
+    if (state == null || pin.length < 2) return true;
+    List<String>? validPrefixes = statePinPrefixes[state];
+    if (validPrefixes == null) return true;
+
+    for (String prefix in validPrefixes) {
+      if (pin.startsWith(prefix)) return true;
+    }
+    return false;
   }
 
   Future<void> loadSavedAddress() async {
@@ -119,7 +164,6 @@ mixin PatientFormLogic<T extends StatefulWidget> on State<T> {
       }
     });
   }
-
   void showAddSymptomDialog() {
     showDialog(
       context: context,
@@ -173,11 +217,8 @@ mixin PatientFormLogic<T extends StatefulWidget> on State<T> {
     setState(() {
       autoValidate = AutovalidateMode.onUserInteraction;
     });
-
     if (!formKey.currentState!.validate()) return;
-
     FocusManager.instance.primaryFocus?.unfocus();
-
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -192,7 +233,16 @@ mixin PatientFormLogic<T extends StatefulWidget> on State<T> {
               infoRow("Age", ageController.text),
               infoRow("Gender", gender),
               const Divider(),
-              infoRow("Zipcode", zipController.text),
+              if (villageController.text.isNotEmpty)
+                infoRow("Village", villageController.text),
+              infoRow("City", cityController.text),
+              infoRow("State", selectedState ?? "N/A"),
+              infoRow(
+                  "Risk Level",
+                  riskFactor == 3.0
+                      ? "Critical"
+                      : (riskFactor == 1.5 ? "Urgent" : "Standard")
+              ),
             ],
           ),
           actions: [
@@ -247,10 +297,11 @@ mixin PatientFormLogic<T extends StatefulWidget> on State<T> {
         "gender": gender,
         "temperature": double.parse(tempController.text).round(),
         "days": int.parse(daysController.text),
-        "contagious": contagious ? "yes" : "no",
+        "riskfactor": riskFactor,
         "address": {
           "zip": zipController.text.trim(),
           "city": cityController.text.trim(),
+          "village": villageController.text.trim(),
           "state": selectedState,
         },
         "symptoms": selectedSymptoms,

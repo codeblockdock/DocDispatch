@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'utils/theme_manager.dart';
 import 'utils/patient_utils.dart';
+import 'utils/theme_manager.dart';
 
 class PatientFormScreen extends StatefulWidget {
   const PatientFormScreen({super.key});
@@ -101,13 +101,32 @@ class PatientFormScreenState extends State<PatientFormScreen> with PatientFormLo
                 ],
               ),
               const SizedBox(height: 12),
-              CheckboxListTile(
-                title: const Text("Condition seems contagious"),
-                value: contagious,
-                onChanged: (v) => setState(() => contagious = v!),
-                contentPadding: EdgeInsets.zero,
+              DropdownButtonFormField<double>(
+                initialValue: riskFactor,
+                decoration: const InputDecoration(
+                  labelText: "Severity / Assistance Required",
+                  border: OutlineInputBorder(),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                ),
+                hint: const Text("Select Risk Level"),
+                items: const [
+                  DropdownMenuItem(
+                    value: 1.0,
+                    child: Text("Standard (Low Risk)"),
+                  ),
+                  DropdownMenuItem(
+                    value: 1.5,
+                    child: Text("Urgent (Moderate Risk)"),
+                  ),
+                  DropdownMenuItem(
+                    value: 3.0,
+                    child: Text("Immediate (High Risk)"),
+                  ),
+                ],
+                onChanged: (v) => setState(() => riskFactor = v),
+                validator: (v) => v == null ? "Please select a severity level" : null,
               ),
-              const Divider(),
+              const Divider(height: 30),
               const Text("Location Details", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
               Row(
@@ -118,8 +137,24 @@ class PatientFormScreenState extends State<PatientFormScreen> with PatientFormLo
                       controller: zipController,
                       keyboardType: TextInputType.number,
                       decoration: const InputDecoration(labelText: "Zipcode"),
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                      validator: (v) => v == null || v.length != 6 ? "6 Digits" : null,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(6),
+                      ],
+                      validator: (v) {
+                        if (v == null || v.length != 6) return "6 Digits";
+                        if (selectedState != null) {
+                          if (!isValidPinForState(v, selectedState)) {
+                            return "Invalid";
+                          }
+                        }
+                        return null;
+                      },
+                      onChanged: (val) {
+                        if (selectedState != null && autoValidate == AutovalidateMode.onUserInteraction) {
+                          formKey.currentState?.validate();
+                        }
+                      },
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -135,11 +170,24 @@ class PatientFormScreenState extends State<PatientFormScreen> with PatientFormLo
                 ],
               ),
               const SizedBox(height: 12),
+              TextFormField(
+                controller: villageController,
+                textCapitalization: TextCapitalization.words,
+                decoration: const InputDecoration(
+                  labelText: "Village Name (Optional)",
+                ),
+              ),
+              const SizedBox(height: 12),
               DropdownButtonFormField<String>(
                 initialValue: selectedState,
                 decoration: const InputDecoration(labelText: "State (India)"),
                 items: indianStates.map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
-                onChanged: (v) => setState(() => selectedState = v),
+                onChanged: (v) {
+                  setState(() => selectedState = v);
+                  if (zipController.text.isNotEmpty) {
+                    formKey.currentState?.validate();
+                  }
+                },
                 validator: (v) => v == null ? "Required" : null,
               ),
               const Divider(height: 30),
