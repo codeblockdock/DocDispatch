@@ -8,6 +8,7 @@ import PatientTable from '../components/PatientTable';
 import PatientModal from '../components/PatientModal';
 import AttendModal from '../components/AttendModal';
 import ReceiptModal from '../components/ReceiptModal';
+import DispatchSection from '../components/DispatchSection';
 import './Dashboard.css';
 
 function Dashboard() {
@@ -32,6 +33,9 @@ function Dashboard() {
   const [showViewModal, setShowViewModal] = useState(false);
   const [showAttendModal, setShowAttendModal] = useState(false);
   const [showReceiptModal, setShowReceiptModal] = useState(false);
+  
+  // Flash message for dispatch
+  const [flashMessage, setFlashMessage] = useState(null);
 
   const fetchData = useCallback(async () => {
     try {
@@ -96,9 +100,91 @@ function Dashboard() {
     setShowReceiptModal(true);
   };
 
+  const handleDispatch = async (group) => {
+    try {
+      // Get hospital data from localStorage
+      const storedData = localStorage.getItem('hospitalData');
+      let hospitalData = {
+        doctorName: 'Dispatched Doctor',
+        hospitalName: 'Dispatch Center',
+        city: group.city,
+        state: group.state,
+      };
+      
+      if (storedData) {
+        try {
+          const data = JSON.parse(storedData);
+          hospitalData = {
+            doctorName: data.doctorName || 'Dispatched Doctor',
+            hospitalName: data.name || data.hospitalName || 'Dispatch Center',
+            city: data.city || group.city,
+            state: data.state || group.state,
+          };
+        } catch (e) {
+          console.error('Error parsing hospital data:', e);
+        }
+      }
+
+      // Prepare mass attend data
+      const massAttendData = {
+        queryIds: group.patients.map(p => p.id),
+        doctor: hospitalData.doctorName,
+        hospital: hospitalData.hospitalName,
+        city: hospitalData.city,
+        state: hospitalData.state,
+        diagnosis: 'Field Assessment Required',
+        treatment: 'Doctor Dispatched - In-person examination scheduled',
+        appointment: 'Doctor En Route',
+        advice: 'Doctor has been dispatched to your location. Please be available for examination.',
+        doctorsDispatched: group.doctorsNeeded,
+        location: group.village,
+        pincode: group.pincode,
+      };
+
+      await patientAPI.massAttend(massAttendData);
+      
+      // Show flash message
+      setFlashMessage({
+        location: group.village,
+        pincode: group.pincode,
+        doctors: group.doctorsNeeded,
+        patients: group.patientCount,
+      });
+      
+      // Auto-hide flash message after 3 seconds
+      setTimeout(() => {
+        setFlashMessage(null);
+      }, 3000);
+      
+      // Refresh data
+      fetchData();
+    } catch (err) {
+      console.error('Error dispatching doctor:', err);
+      setError('Failed to dispatch doctor. Please try again.');
+    }
+  };
+
   return (
     <div className="dashboard">
       <Header />
+      
+      {/* Flash Message for Doctor Dispatch */}
+      {flashMessage && (
+        <div className="dispatch-flash-message">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+            <polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+          <div>
+            <span className="flash-text">
+              🚑 Doctor Dispatched in Your Location!
+            </span>
+            <span className="flash-location">
+              {' '}• {flashMessage.doctors} doctor(s) sent to {flashMessage.location} ({flashMessage.pincode}) for {flashMessage.patients} patient(s)
+            </span>
+          </div>
+        </div>
+      )}
       
       <main className="dashboard-main">
         <div className="container">
@@ -136,6 +222,15 @@ function Dashboard() {
 
           {/* Stats Cards */}
           <StatsCards stats={stats} loading={loading} isAdmin={user?.isAdmin} />
+
+          {/* Dispatch Section - Near Hospital Performance */}
+          {user?.isAdmin && (
+            <DispatchSection 
+              patients={patients} 
+              onDispatch={handleDispatch}
+              onRefresh={fetchData}
+            />
+          )}
 
           {/* Filters */}
           <div className="filters-card">

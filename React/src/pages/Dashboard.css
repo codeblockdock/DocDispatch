@@ -101,3 +101,57 @@
     width: 100%;
   }
 }
+
+/* Flash Message for Doctor Dispatch */
+.dispatch-flash-message {
+  position: fixed;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  padding: 16px 32px;
+  background: linear-gradient(135deg, #059669, #10b981);
+  color: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(16, 185, 129, 0.4);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  animation: slideDown 0.4s ease-out, fadeOut 0.4s ease-in 2.6s forwards;
+  max-width: 90%;
+}
+
+.dispatch-flash-message svg {
+  flex-shrink: 0;
+}
+
+.dispatch-flash-message .flash-text {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.dispatch-flash-message .flash-location {
+  font-weight: 400;
+  opacity: 0.9;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}

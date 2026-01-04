@@ -65,6 +65,10 @@ export const patientAPI = {
   // Attend/update patient
   attend: (queryId, data) =>
     api.post('/attend', { queryId, ...data }),
+
+  // Mass attend for doctor dispatch
+  massAttend: (data) =>
+    api.post('/mass-attend', data),
 };
 
 // Stats API

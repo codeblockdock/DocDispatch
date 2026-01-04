@@ -3,6 +3,7 @@ package online.anshu.docdispatch.controller;
 import online.anshu.docdispatch.dto.AddQueryRequest;
 import online.anshu.docdispatch.dto.AttendQueryRequest;
 import online.anshu.docdispatch.dto.DiseasePrediction;
+import online.anshu.docdispatch.dto.MassAttendRequest;
 import online.anshu.docdispatch.dto.PredictDiseaseRequest;
 import online.anshu.docdispatch.dto.QueryResponseDto;
 import online.anshu.docdispatch.service.PredictionService;
@@ -70,6 +71,26 @@ public class QueryController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             Map<String, String> response = new HashMap<>();
+            response.put("error", e.getMessage());
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
+    
+    @PostMapping("/mass-attend")
+    public ResponseEntity<Map<String, Object>> massAttendQueries(@RequestBody MassAttendRequest request) {
+        try {
+            int attendedCount = queryService.massAttendQueries(request);
+            Map<String, Object> response = new HashMap<>();
+            response.put("status", "success");
+            response.put("message", "Doctor dispatched in your location");
+            response.put("attendedCount", attendedCount);
+            response.put("location", request.getLocation());
+            response.put("pincode", request.getPincode());
+            response.put("doctorsDispatched", request.getDoctorsDispatched());
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("status", "error");
             response.put("error", e.getMessage());
             return ResponseEntity.internalServerError().body(response);
         }

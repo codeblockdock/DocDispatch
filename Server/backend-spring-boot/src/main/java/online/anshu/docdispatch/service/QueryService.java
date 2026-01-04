@@ -2,6 +2,7 @@ package online.anshu.docdispatch.service;
 
 import online.anshu.docdispatch.dto.AddQueryRequest;
 import online.anshu.docdispatch.dto.AttendQueryRequest;
+import online.anshu.docdispatch.dto.MassAttendRequest;
 import online.anshu.docdispatch.dto.QueryResponseDto;
 import online.anshu.docdispatch.entity.Attended;
 import online.anshu.docdispatch.entity.PatientLocation;
@@ -201,6 +202,63 @@ public class QueryService {
         attended.setTimestamp(Date.from(ZonedDateTime.now(ZoneId.of("Asia/Kolkata")).toInstant()));
         
         attendedRepository.save(attended);
+    }
+    
+    public int massAttendQueries(MassAttendRequest request) {
+        System.out.println("\n========== MASS ATTEND - DOCTOR DISPATCH ==========");
+        System.out.println("Location: " + request.getLocation() + " (" + request.getPincode() + ")");
+        System.out.println("Doctors Dispatched: " + request.getDoctorsDispatched());
+        System.out.println("Patients to attend: " + request.getQueryIds().size());
+        
+        int attendedCount = 0;
+        
+        for (String queryId : request.getQueryIds()) {
+            try {
+                // Update query as attended
+                Query query = queryRepository.findById(queryId).orElse(null);
+                if (query == null) {
+                    System.out.println("Query not found: " + queryId);
+                    continue;
+                }
+                
+                // Skip if already attended
+                if (query.getAttended() == 1) {
+                    System.out.println("Query already attended: " + queryId);
+                    continue;
+                }
+                
+                query.setAttended(1);
+                queryRepository.save(query);
+                
+                // Add attended record
+                Attended attended = new Attended();
+                attended.setQueryId(queryId);
+                attended.setDoctor(request.getDoctor() + " (Dispatched)");
+                attended.setHospital(request.getHospital());
+                attended.setCity(request.getCity());
+                attended.setDiagnosis(request.getDiagnosis() != null && !request.getDiagnosis().trim().isEmpty() 
+                    ? request.getDiagnosis() : "Field Assessment Required");
+                attended.setTreatment(request.getTreatment() != null && !request.getTreatment().trim().isEmpty() 
+                    ? request.getTreatment() : "Doctor Dispatched - In-person examination scheduled");
+                attended.setAppointment(request.getAppointment() != null && !request.getAppointment().trim().isEmpty() 
+                    ? request.getAppointment() : "Doctor En Route");
+                attended.setAdvice(request.getAdvice() != null && !request.getAdvice().trim().isEmpty() 
+                    ? request.getAdvice() : "Doctor has been dispatched to your location. Please be available for examination.");
+                attended.setTimestamp(Date.from(ZonedDateTime.now(ZoneId.of("Asia/Kolkata")).toInstant()));
+                
+                attendedRepository.save(attended);
+                attendedCount++;
+                System.out.println("Attended query: " + queryId + " for patient: " + query.getName());
+                
+            } catch (Exception e) {
+                System.out.println("Error attending query " + queryId + ": " + e.getMessage());
+            }
+        }
+        
+        System.out.println("Successfully attended " + attendedCount + " patients");
+        System.out.println("=====================================================\n");
+        
+        return attendedCount;
     }
     
     private String formatAppointmentForMobile(String appointmentDateString) {
