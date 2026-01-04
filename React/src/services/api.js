@@ -66,6 +66,10 @@ export const patientAPI = {
   attend: (queryId, data) =>
     api.post('/attend', { queryId, ...data }),
 
+  // Undo attendance (mark patient as unattended)
+  unattend: (queryId) =>
+    api.post(`/unattend?queryId=${queryId}`),
+
   // Mass attend for doctor dispatch
   massAttend: (data) =>
     api.post('/mass-attend', data),

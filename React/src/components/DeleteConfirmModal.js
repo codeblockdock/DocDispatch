@@ -1,7 +1,7 @@
 import React from 'react';
 import './DeleteConfirmModal.css';
 
-function DeleteConfirmModal({ patient, onConfirm, onCancel }) {
+function DeleteConfirmModal({ patient, onConfirm, onCancel, loading }) {
   return (
     <div className="modal-overlay" onClick={onCancel}>
       <div className="modal delete-modal" onClick={(e) => e.stopPropagation()}>
@@ -19,11 +19,11 @@ function DeleteConfirmModal({ patient, onConfirm, onCancel }) {
             This action cannot be undone.
           </p>
           <div className="delete-modal-actions">
-            <button className="btn btn-secondary" onClick={onCancel}>
+            <button className="btn btn-secondary" onClick={onCancel} disabled={loading}>
               Cancel
             </button>
-            <button className="btn btn-danger" onClick={onConfirm}>
-              Delete Record
+            <button className="btn btn-danger" onClick={onConfirm} disabled={loading}>
+              {loading ? 'Deleting...' : 'Delete Record'}
             </button>
           </div>
         </div>

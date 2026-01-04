@@ -8,6 +8,7 @@ import PatientTable from '../components/PatientTable';
 import PatientModal from '../components/PatientModal';
 import AttendModal from '../components/AttendModal';
 import ReceiptModal from '../components/ReceiptModal';
+import DeleteConfirmModal from '../components/DeleteConfirmModal';
 import DispatchSection from '../components/DispatchSection';
 import './Dashboard.css';
 
@@ -33,6 +34,8 @@ function Dashboard() {
   const [showViewModal, setShowViewModal] = useState(false);
   const [showAttendModal, setShowAttendModal] = useState(false);
   const [showReceiptModal, setShowReceiptModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   
   // Flash message for dispatch
   const [flashMessage, setFlashMessage] = useState(null);
@@ -98,6 +101,28 @@ function Dashboard() {
   const handleViewReceipt = (patient) => {
     setSelectedPatient(patient);
     setShowReceiptModal(true);
+  };
+
+  const handleDelete = (patient) => {
+    setSelectedPatient(patient);
+    setShowDeleteModal(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!selectedPatient) return;
+    
+    setDeleting(true);
+    try {
+      await patientAPI.delete(selectedPatient.id);
+      setShowDeleteModal(false);
+      setSelectedPatient(null);
+      fetchData(); // Refresh the patient list
+    } catch (err) {
+      console.error('Error deleting patient:', err);
+      setError('Failed to delete patient. Please try again.');
+    } finally {
+      setDeleting(false);
+    }
   };
 
   const handleDispatch = async (group, doctorDetails) => {
@@ -300,6 +325,8 @@ function Dashboard() {
             onView={handleView}
             onAttend={handleAttend}
             onViewReceipt={handleViewReceipt}
+            onDelete={handleDelete}
+            isAdmin={user?.isAdmin}
           />
         </div>
       </main>
@@ -336,6 +363,20 @@ function Dashboard() {
             setShowReceiptModal(false);
             setSelectedPatient(null);
           }}
+          onRefresh={fetchData}
+        />
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && selectedPatient && (
+        <DeleteConfirmModal 
+          patient={selectedPatient}
+          onConfirm={handleConfirmDelete}
+          onCancel={() => {
+            setShowDeleteModal(false);
+            setSelectedPatient(null);
+          }}
+          loading={deleting}
         />
       )}
     </div>

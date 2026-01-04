@@ -261,6 +261,32 @@ public class QueryService {
         return attendedCount;
     }
     
+    /**
+     * Undo attendance - marks a patient as unattended and removes the attended record
+     */
+    public void unattendQuery(String queryId) {
+        System.out.println("\n========== UNDO ATTENDANCE ==========");
+        System.out.println("Undoing attendance for query: " + queryId);
+        
+        // Find and update the query
+        Query query = queryRepository.findById(queryId)
+            .orElseThrow(() -> new RuntimeException("Query not found"));
+        
+        if (query.getAttended() != 1) {
+            throw new RuntimeException("Query is not attended");
+        }
+        
+        // Mark as unattended
+        query.setAttended(0);
+        queryRepository.save(query);
+        
+        // Delete the attended record
+        attendedRepository.deleteById(queryId);
+        
+        System.out.println("Successfully undone attendance for query: " + queryId);
+        System.out.println("========================================\n");
+    }
+    
     private String formatAppointmentForMobile(String appointmentDateString) {
         if (appointmentDateString == null || appointmentDateString.isEmpty() || appointmentDateString.equals("Not Applicable")) {
             return "Not Applicable";

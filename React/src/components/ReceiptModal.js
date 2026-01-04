@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { patientAPI } from '../services/api';
 import './ReceiptModal.css';
 
-function ReceiptModal({ patient, onClose }) {
+function ReceiptModal({ patient, onClose, onRefresh }) {
   const [receipt, setReceipt] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [undoLoading, setUndoLoading] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   useEffect(() => {
     const fetchReceipt = async () => {
@@ -42,6 +44,21 @@ function ReceiptModal({ patient, onClose }) {
     } catch {
       return dateString;
     }
+  };
+
+  const handleUndo = async () => {
+    setUndoLoading(true);
+    setError('');
+    try {
+      await patientAPI.unattend(patient.id);
+      if (onRefresh) onRefresh();
+      onClose();
+    } catch (err) {
+      console.error('Error undoing attendance:', err);
+      setError('Failed to undo attendance. Please try again.');
+      setShowConfirm(false);
+    }
+    setUndoLoading(false);
   };
 
   if (loading) {
@@ -174,13 +191,55 @@ function ReceiptModal({ patient, onClose }) {
                 <span className="attended-value">{receipt.attendedTimestamp || formatDateTime(receipt.receivedAt)}</span>
               </div>
 
-              {/* Print Button */}
+              {/* Undo Confirmation */}
+              {showConfirm && (
+                <div className="undo-confirm-section">
+                  <div className="undo-confirm-message">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <circle cx="12" cy="12" r="10"/>
+                      <line x1="12" y1="8" x2="12" y2="12"/>
+                      <line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
+                    <span>Are you sure you want to undo this attendance? The patient will be marked as unattended.</span>
+                  </div>
+                  <div className="undo-confirm-actions">
+                    <button 
+                      className="btn btn-secondary btn-sm"
+                      onClick={() => setShowConfirm(false)}
+                      disabled={undoLoading}
+                    >
+                      Cancel
+                    </button>
+                    <button 
+                      className="btn btn-danger btn-sm"
+                      onClick={handleUndo}
+                      disabled={undoLoading}
+                    >
+                      {undoLoading ? 'Undoing...' : 'Yes, Undo Attendance'}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Action Buttons */}
               <div className="receipt-actions">
                 <button 
                   className="btn btn-secondary"
                   onClick={onClose}
                 >
                   Close
+                </button>
+                <button 
+                  className="btn btn-warning"
+                  onClick={() => setShowConfirm(true)}
+                  title="Undo Attendance"
+                  disabled={showConfirm}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polyline points="1 4 1 10 7 10"/>
+                    <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+                  </svg>
+                  Undo
                 </button>
                 <button 
                   className="btn btn-primary"
@@ -191,7 +250,7 @@ function ReceiptModal({ patient, onClose }) {
                     <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
                     <rect x="6" y="14" width="12" height="8"/>
                   </svg>
-                  Print Receipt
+                  Print
                 </button>
               </div>
             </div>

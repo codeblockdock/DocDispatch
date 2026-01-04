@@ -1,7 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './PatientTable.css';
 
-function PatientTable({ patients, loading, onView, onAttend, onViewReceipt }) {
+const ITEMS_PER_PAGE = 10;
+
+function PatientTable({ patients, loading, onView, onAttend, onViewReceipt, onDelete, isAdmin }) {
+  const [currentPage, setCurrentPage] = useState(1);
+  
   const getRiskBadge = (risk, age) => {
     if ((age >= 5 && age <= 12) || (age >= 51 && age <= 60)) return 'badge-purple';
     if (risk === 3.0) return 'badge-danger';
@@ -61,6 +65,46 @@ function PatientTable({ patients, loading, onView, onAttend, onViewReceipt }) {
     );
   }
 
+  // Pagination calculations
+  const totalPages = Math.ceil(patients.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const currentPatients = patients.slice(startIndex, endIndex);
+
+  const handlePageChange = (page) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
+
+  const getPageNumbers = () => {
+    const pages = [];
+    const maxVisiblePages = 5;
+    
+    if (totalPages <= maxVisiblePages) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      if (currentPage <= 3) {
+        for (let i = 1; i <= 4; i++) pages.push(i);
+        pages.push('...');
+        pages.push(totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        pages.push(1);
+        pages.push('...');
+        for (let i = totalPages - 3; i <= totalPages; i++) pages.push(i);
+      } else {
+        pages.push(1);
+        pages.push('...');
+        for (let i = currentPage - 1; i <= currentPage + 1; i++) pages.push(i);
+        pages.push('...');
+        pages.push(totalPages);
+      }
+    }
+    return pages;
+  };
+
   return (
     <div className="table-container">
       <table className="table">
@@ -76,7 +120,7 @@ function PatientTable({ patients, loading, onView, onAttend, onViewReceipt }) {
           </tr>
         </thead>
         <tbody>
-          {patients.map((patient) => (
+          {currentPatients.map((patient) => (
             <tr key={patient.id}>
               <td>
                 <div className="patient-name-cell">
@@ -150,6 +194,18 @@ function PatientTable({ patients, loading, onView, onAttend, onViewReceipt }) {
                       Attend
                     </button>
                   )}
+                  {isAdmin && (
+                    <button 
+                      className="btn btn-sm btn-danger"
+                      onClick={() => onDelete(patient)}
+                      title="Delete Patient"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                      </svg>
+                    </button>
+                  )}
                 </div>
               </td>
             </tr>
@@ -157,7 +213,45 @@ function PatientTable({ patients, loading, onView, onAttend, onViewReceipt }) {
         </tbody>
       </table>
       <div className="table-footer">
-        <p>Showing {patients.length} patient{patients.length !== 1 ? 's' : ''}</p>
+        <p>Showing {startIndex + 1}-{Math.min(endIndex, patients.length)} of {patients.length} patient{patients.length !== 1 ? 's' : ''}</p>
+        
+        {totalPages > 1 && (
+          <div className="pagination">
+            <button 
+              className="pagination-btn"
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="15 18 9 12 15 6"/>
+              </svg>
+            </button>
+            
+            {getPageNumbers().map((page, index) => (
+              page === '...' ? (
+                <span key={`ellipsis-${index}`} className="pagination-ellipsis">...</span>
+              ) : (
+                <button
+                  key={page}
+                  className={`pagination-btn ${currentPage === page ? 'active' : ''}`}
+                  onClick={() => handlePageChange(page)}
+                >
+                  {page}
+                </button>
+              )
+            ))}
+            
+            <button 
+              className="pagination-btn"
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="9 18 15 12 9 6"/>
+              </svg>
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

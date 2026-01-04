@@ -2,12 +2,55 @@ import React, { useState } from 'react';
 import { statsAPI } from '../services/api';
 import './HospitalStatsTable.css';
 
+const ITEMS_PER_PAGE = 10;
+
 function HospitalStatsTable({ stats, onRefresh }) {
   const [toggling, setToggling] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
   if (!stats || stats.length === 0) {
     return <div className="no-stats">No hospital statistics available.</div>;
   }
+
+  // Pagination calculations
+  const totalPages = Math.ceil(stats.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const currentStats = stats.slice(startIndex, endIndex);
+
+  const handlePageChange = (page) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
+
+  const getPageNumbers = () => {
+    const pages = [];
+    const maxVisiblePages = 5;
+    
+    if (totalPages <= maxVisiblePages) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      if (currentPage <= 3) {
+        for (let i = 1; i <= 4; i++) pages.push(i);
+        pages.push('...');
+        pages.push(totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        pages.push(1);
+        pages.push('...');
+        for (let i = totalPages - 3; i <= totalPages; i++) pages.push(i);
+      } else {
+        pages.push(1);
+        pages.push('...');
+        for (let i = currentPage - 1; i <= currentPage + 1; i++) pages.push(i);
+        pages.push('...');
+        pages.push(totalPages);
+      }
+    }
+    return pages;
+  };
 
   const handleToggleStatus = async (hospitalId) => {
     try {
@@ -53,7 +96,7 @@ function HospitalStatsTable({ stats, onRefresh }) {
             </tr>
           </thead>
           <tbody>
-            {stats.map((hospital) => (
+            {currentStats.map((hospital) => (
               <tr key={hospital.hospitalId} className={!hospital.active ? 'row-blocked' : ''}>
                 <td className="hospital-name">
                   {hospital.hospitalName}
@@ -96,6 +139,48 @@ function HospitalStatsTable({ stats, onRefresh }) {
             ))}
           </tbody>
         </table>
+      </div>
+      
+      <div className="stats-table-footer">
+        <p>Showing {startIndex + 1}-{Math.min(endIndex, stats.length)} of {stats.length} hospital{stats.length !== 1 ? 's' : ''}</p>
+        
+        {totalPages > 1 && (
+          <div className="pagination">
+            <button 
+              className="pagination-btn"
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="15 18 9 12 15 6"/>
+              </svg>
+            </button>
+            
+            {getPageNumbers().map((page, index) => (
+              page === '...' ? (
+                <span key={`ellipsis-${index}`} className="pagination-ellipsis">...</span>
+              ) : (
+                <button
+                  key={page}
+                  className={`pagination-btn ${currentPage === page ? 'active' : ''}`}
+                  onClick={() => handlePageChange(page)}
+                >
+                  {page}
+                </button>
+              )
+            ))}
+            
+            <button 
+              className="pagination-btn"
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="9 18 15 12 9 6"/>
+              </svg>
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

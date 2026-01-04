@@ -96,6 +96,22 @@ public class QueryController {
         }
     }
     
+    @PostMapping("/unattend")
+    public ResponseEntity<Map<String, String>> unattendQuery(@RequestParam String queryId) {
+        try {
+            queryService.unattendQuery(queryId);
+            Map<String, String> response = new HashMap<>();
+            response.put("status", "success");
+            response.put("message", "Attendance undone successfully");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, String> response = new HashMap<>();
+            response.put("status", "error");
+            response.put("error", e.getMessage());
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
+    
     @PostMapping("/predict")
     public ResponseEntity<?> predictDisease(@RequestBody PredictDiseaseRequest request) {
         try {
