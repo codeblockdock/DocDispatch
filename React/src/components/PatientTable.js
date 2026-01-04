@@ -9,7 +9,7 @@ function PatientTable({ patients, loading, onView, onAttend, onViewReceipt, onDe
   const getRiskBadge = (risk, age) => {
     if ((age >= 5 && age <= 12) || (age >= 51 && age <= 60)) return 'badge-purple';
     if (risk === 3.0) return 'badge-danger';
-    if (risk === 1.5) return 'badge-orange';
+    if (risk === 2.0) return 'badge-orange';
     if (risk === 1.0) return 'badge-warning';
     return 'badge-secondary';
   };
@@ -17,7 +17,7 @@ function PatientTable({ patients, loading, onView, onAttend, onViewReceipt, onDe
   const getRiskLabel = (risk, age) => {
     let labels = [];
     if (risk === 3.0) labels.push('High');
-    else if (risk === 1.5) labels.push('Medium');
+    else if (risk === 2.0) labels.push('Medium');
     else if (risk === 1.0) labels.push('Low');
     
     if ((age >= 5 && age <= 12) || (age >= 51 && age <= 60)) {

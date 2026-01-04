@@ -368,11 +368,11 @@ function DispatchSection({ patients, onDispatch, onRefresh }) {
                               </div>
                               <span className={`badge ${
                                 patient.riskfactor >= 3 ? 'badge-danger' :
-                                patient.riskfactor >= 1.5 ? 'badge-orange' :
+                                patient.riskfactor >= 2.0 ? 'badge-orange' :
                                 'badge-warning'
                               }`}>
                                 {patient.riskfactor >= 3 ? 'High' :
-                                 patient.riskfactor >= 1.5 ? 'Medium' : 'Low'}
+                                 patient.riskfactor >= 2.0 ? 'Medium' : 'Low'}
                               </span>
                             </div>
                           ))}

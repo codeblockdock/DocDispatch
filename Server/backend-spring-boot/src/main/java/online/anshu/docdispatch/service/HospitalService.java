@@ -187,7 +187,7 @@ public class HospitalService {
             if (riskFactor != null && !riskFactor.isEmpty()) {
                 boolean matches = false;
                 if (riskFactor.equalsIgnoreCase("low") && query.getRiskfactor() == 1.0) matches = true;
-                else if (riskFactor.equalsIgnoreCase("medium") && query.getRiskfactor() == 1.5) matches = true;
+                else if (riskFactor.equalsIgnoreCase("medium") && query.getRiskfactor() == 2.0) matches = true;
                 else if (riskFactor.equalsIgnoreCase("high") && query.getRiskfactor() == 3.0) matches = true;
                 else if (riskFactor.equalsIgnoreCase("priority")) {
                     if ((query.getAge() >= 5 && query.getAge() <= 12) || (query.getAge() >= 51 && query.getAge() <= 60)) {
@@ -221,7 +221,7 @@ public class HospitalService {
                 dto.setStatus("Attended");
             } else if (query.getRiskfactor() == 3.0 || probability >= 70) {
                 dto.setStatus("High Risk");
-            } else if (query.getRiskfactor() == 1.5 || probability >= 40) {
+            } else if (query.getRiskfactor() == 2.0 || probability >= 40) {
                 dto.setStatus("Medium Risk");
             } else {
                 dto.setStatus("Pending");
@@ -303,7 +303,7 @@ public class HospitalService {
             if (riskFactor != null && !riskFactor.isEmpty()) {
                 boolean matches = false;
                 if (riskFactor.equalsIgnoreCase("low") && query.getRiskfactor() == 1.0) matches = true;
-                else if (riskFactor.equalsIgnoreCase("medium") && query.getRiskfactor() == 1.5) matches = true;
+                else if (riskFactor.equalsIgnoreCase("medium") && query.getRiskfactor() == 2.0) matches = true;
                 else if (riskFactor.equalsIgnoreCase("high") && query.getRiskfactor() == 3.0) matches = true;
                 else if (riskFactor.equalsIgnoreCase("priority")) {
                     if ((query.getAge() >= 5 && query.getAge() <= 12) || (query.getAge() >= 51 && query.getAge() <= 60)) {
@@ -337,7 +337,7 @@ public class HospitalService {
                 dto.setStatus("Attended");
             } else if (query.getRiskfactor() == 3.0 || probability >= 70) {
                 dto.setStatus("High Risk");
-            } else if (query.getRiskfactor() == 1.5 || probability >= 40) {
+            } else if (query.getRiskfactor() == 2.0 || probability >= 40) {
                 dto.setStatus("Medium Risk");
             } else {
                 dto.setStatus("Pending");
@@ -436,7 +436,7 @@ public class HospitalService {
             if (riskFactor != null && !riskFactor.isEmpty()) {
                 boolean matches = false;
                 if (riskFactor.equalsIgnoreCase("low") && query.getRiskfactor() == 1.0) matches = true;
-                else if (riskFactor.equalsIgnoreCase("medium") && query.getRiskfactor() == 1.5) matches = true;
+                else if (riskFactor.equalsIgnoreCase("medium") && query.getRiskfactor() == 2.0) matches = true;
                 else if (riskFactor.equalsIgnoreCase("high") && query.getRiskfactor() == 3.0) matches = true;
                 else if (riskFactor.equalsIgnoreCase("priority")) {
                     if ((query.getAge() >= 5 && query.getAge() <= 12) || (query.getAge() >= 51 && query.getAge() <= 60)) {
@@ -470,7 +470,7 @@ public class HospitalService {
                 dto.setStatus("Attended");
             } else if (query.getRiskfactor() == 3.0 || probability >= 70) {
                 dto.setStatus("High Risk");
-            } else if (query.getRiskfactor() == 1.5 || probability >= 40) {
+            } else if (query.getRiskfactor() == 2.0 || probability >= 40) {
                 dto.setStatus("Medium Risk");
             } else {
                 dto.setStatus("Pending");
@@ -685,7 +685,7 @@ public class HospitalService {
             });
         } else if (query.getRiskfactor() == 3.0 || dto.getProbability() >= 70) {
             dto.setStatus("High Risk");
-        } else if (query.getRiskfactor() == 1.5 || dto.getProbability() >= 40) {
+        } else if (query.getRiskfactor() == 2.0 || dto.getProbability() >= 40) {
             dto.setStatus("Medium Risk");
         } else {
             dto.setStatus("Pending");
@@ -786,7 +786,7 @@ public class HospitalService {
             });
         } else if (query.getRiskfactor() == 3.0 || dto.getProbability() >= 70) {
             dto.setStatus("High Risk");
-        } else if (query.getRiskfactor() == 1.5 || dto.getProbability() >= 40) {
+        } else if (query.getRiskfactor() == 2.0 || dto.getProbability() >= 40) {
             dto.setStatus("Medium Risk");
         } else {
             dto.setStatus("Pending");
@@ -953,7 +953,7 @@ public class HospitalService {
 
     private void updatePriorityStats(Map<String, Long> stats, Query q) {
         if (q.getRiskfactor() == 1.0) stats.put("Low", stats.get("Low") + 1);
-        else if (q.getRiskfactor() == 1.5) stats.put("Medium", stats.get("Medium") + 1);
+        else if (q.getRiskfactor() == 2.0) stats.put("Medium", stats.get("Medium") + 1);
         else if (q.getRiskfactor() == 3.0) stats.put("High", stats.get("High") + 1);
         
         if ((q.getAge() >= 5 && q.getAge() <= 12) || (q.getAge() >= 51 && q.getAge() <= 60)) {

@@ -115,11 +115,11 @@ class PatientFormScreenState extends State<PatientFormScreen> with PatientFormLo
                     child: Text("Standard (Low Risk)"),
                   ),
                   DropdownMenuItem(
-                    value: 1.5,
+                    value: 2.0,
                     child: Text("Urgent (Moderate Risk)"),
                   ),
                   DropdownMenuItem(
-                    value: 2.0,
+                    value: 3.0,
                     child: Text("Immediate (High Risk)"),
                   ),
                 ],
