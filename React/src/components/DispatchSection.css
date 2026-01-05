@@ -38,6 +38,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  white-space: nowrap;
 }
 
 .sort-control label {
@@ -272,6 +273,47 @@
   border-top: 2px solid #3b82f6;
 }
 
+.patient-details-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.patient-details-header h4 {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+.risk-summary-tags {
+  display: flex;
+  gap: 12px;
+}
+
+.risk-tag {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.risk-tag-high {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.risk-tag-medium {
+  background: #ffedd5;
+  color: #ea580c;
+}
+
+.risk-tag-low {
+  background: #fef3c7;
+  color: #d97706;
+}
+
 .patient-details-container h4 {
   margin: 0 0 16px 0;
   font-size: 0.875rem;
@@ -485,9 +527,17 @@
 /* Responsive */
 @media (max-width: 768px) {
   .dispatch-header {
-    flex-direction: column;
-    gap: 16px;
-    text-align: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .dispatch-title {
+    font-size: 1.1rem;
+  }
+
+  .dispatch-controls {
+    gap: 12px;
   }
 
   .dispatch-info-bar {
