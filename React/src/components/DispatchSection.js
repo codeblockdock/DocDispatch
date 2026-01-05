@@ -81,11 +81,16 @@ function DispatchSection({ patients, onDispatch, onRefresh }) {
           state: patient.state || 'Unknown',
           patients: [],
           totalRiskFactor: 0,
+          riskCounts: { low: 0, medium: 0, high: 0 }
         };
       }
       
       groups[key].patients.push(patient);
       groups[key].totalRiskFactor += patient.riskfactor || 1;
+
+      if (patient.riskfactor >= 3) groups[key].riskCounts.high++;
+      else if (patient.riskfactor >= 2) groups[key].riskCounts.medium++;
+      else groups[key].riskCounts.low++;
     });
 
     // Convert to array and calculate doctors needed
@@ -353,7 +358,14 @@ function DispatchSection({ patients, onDispatch, onRefresh }) {
                   <tr className="patient-details-row">
                     <td colSpan="6">
                       <div className="patient-details-container">
-                        <h4>Patients in this location ({group.patientCount})</h4>
+                        <div className="patient-details-header">
+                          <h4>Patients in this location ({group.patientCount})</h4>
+                          <div className="risk-summary-tags">
+                            <span className="risk-tag risk-tag-high">High: {group.riskCounts.high}</span>
+                            <span className="risk-tag risk-tag-medium">Medium: {group.riskCounts.medium}</span>
+                            <span className="risk-tag risk-tag-low">Low: {group.riskCounts.low}</span>
+                          </div>
+                        </div>
                         <div className="patient-list">
                           {group.patients.map(patient => (
                             <div key={patient.id} className="patient-mini-card">
@@ -363,7 +375,7 @@ function DispatchSection({ patients, onDispatch, onRefresh }) {
                               <div className="patient-mini-info">
                                 <span className="patient-mini-name">{patient.name}</span>
                                 <span className="patient-mini-details">
-                                  {patient.age} yrs • Risk: {patient.riskfactor}
+                                  {patient.age} yrs • {patient.contact}
                                 </span>
                               </div>
                               <span className={`badge ${
