@@ -141,7 +141,7 @@ function StatsCards({ stats, loading, isAdmin }) {
       <div className="stats-container">
         <div className="stats-section">
           <h3 className="stats-section-title">Patient Statistics</h3>
-          <div className="stats-grid">
+        <div className="stats-grid stats-grid-patient">
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <div key={i} className="stats-card stats-card-loading">
                 <div className="stats-skeleton stats-skeleton-icon"></div>
@@ -173,7 +173,7 @@ function StatsCards({ stats, loading, isAdmin }) {
     <div className="stats-container">
       <div className="stats-section">
         <h3 className="stats-section-title">Patient Statistics</h3>
-        <div className="stats-grid">
+        <div className="stats-grid stats-grid-patient">
           {patientCards.map((card, index) => (
             <div key={index} className={`stats-card stats-card-${card.color}`}>
               <div className="stats-card-header">

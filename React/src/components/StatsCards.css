@@ -5,10 +5,33 @@
   margin-bottom: 24px;
 }
 
+.stats-grid-patient {
+  grid-template-columns: repeat(6, 1fr);
+  gap: 12px;
+}
+
+.stats-grid-patient .stats-card {
+  padding: 12px;
+}
+
+.stats-grid-patient .stats-value {
+  font-size: 20px;
+}
+
+.stats-grid-patient .stats-icon {
+  width: 36px;
+  height: 36px;
+}
+
+.stats-grid-patient .stats-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
 .stats-card {
   background: white;
   border-radius: var(--radius-lg);
-  padding: 20px;
+  padding: 16px;
   box-shadow: var(--shadow);
   transition: transform 0.2s, box-shadow 0.2s;
   border-left: 4px solid transparent;
